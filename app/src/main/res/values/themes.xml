@@ -1,0 +1,16 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.MinimalLauncherApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/minimal_white</item>
+        <item name="colorPrimaryVariant">@color/minimal_white</item>
+        <item name="colorOnPrimary">@color/dark_charcoal</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor" tools:targetApi="l">@color/minimal_white</item>
+        <item name="android:background">@color/minimal_white</item>
+        <!-- Customize your theme here. -->
+        <item name="android:textColor">@color/dark_charcoal</item>
+        <item name="android:fontFamily">@font/notosanscjkjp_light</item>
+    </style>
+
+</resources>

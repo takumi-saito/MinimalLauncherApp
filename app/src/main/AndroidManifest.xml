@@ -13,7 +13,7 @@
             android:name="com.kireaji.minimallauncherapp.FullscreenActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/app_name"
-            >
+            android:exported="true" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <!-- ランチャーアプリも含める -->

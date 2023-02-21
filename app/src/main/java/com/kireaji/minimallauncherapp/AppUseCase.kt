@@ -5,6 +5,9 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.ResolveInfo
+import android.os.Build
+import android.util.Log
 
 class AppUseCase {
     companion object {
@@ -29,15 +32,24 @@ class AppUseCase {
          * ランチャーに表示するアプリ一覧を取得する
          */
         fun getAppInfoList(context: Context): List<AppInfo> {
-            val pm = context.packageManager
-            val intent = Intent(Intent.ACTION_MAIN).also {
-                it.addCategory(Intent.CATEGORY_LAUNCHER)
+            val resolveInfoList: List<ResolveInfo> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                context.packageManager.queryIntentActivities(
+                    Intent(Intent.ACTION_MAIN, null).addCategory(Intent.CATEGORY_LAUNCHER),
+                    PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_DEFAULT_ONLY.toLong())
+                )
+            } else {
+                context.packageManager.queryIntentActivities(
+                    Intent(Intent.ACTION_MAIN, null).addCategory(Intent.CATEGORY_LAUNCHER),
+                    PackageManager.GET_META_DATA
+                )
             }
-
-            return pm.queryIntentActivities(intent, PackageManager.MATCH_ALL)
+            val pm = context.packageManager
+            return resolveInfoList
                 .asSequence()
                 .mapNotNull { it.activityInfo }
-                .filter { it.packageName != context.packageName }
+                .filter {
+                    it.packageName != context.packageName
+                }
                 .map {
                     AppInfo(
                         icon = it.loadIcon(pm), // icon

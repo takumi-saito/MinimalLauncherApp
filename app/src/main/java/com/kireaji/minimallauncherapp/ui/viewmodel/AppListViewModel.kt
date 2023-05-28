@@ -1,7 +1,9 @@
-package com.kireaji.minimallauncherapp
+package com.kireaji.minimallauncherapp.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kireaji.minimallauncherapp.usecase.AppUseCase
+import com.kireaji.minimallauncherapp.data.model.AppInfo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

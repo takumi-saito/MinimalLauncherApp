@@ -1,6 +1,5 @@
-package com.kireaji.minimallauncherapp
+package com.kireaji.minimallauncherapp.ui.compose
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -17,6 +16,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.kireaji.minimallauncherapp.ui.viewmodel.AppListViewModel
+import com.kireaji.minimallauncherapp.R
+import com.kireaji.minimallauncherapp.data.model.AppInfo
 
 @Composable
 fun AppListScreen(

@@ -1,4 +1,4 @@
-package com.kireaji.minimallauncherapp
+package com.kireaji.minimallauncherapp.data.model
 
 import android.content.ComponentName
 import android.graphics.drawable.Drawable

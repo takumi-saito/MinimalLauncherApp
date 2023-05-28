@@ -1,4 +1,4 @@
-package com.kireaji.minimallauncherapp
+package com.kireaji.minimallauncherapp.ui
 
 import android.content.Context
 import android.util.AttributeSet

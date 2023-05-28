@@ -1,7 +1,7 @@
 package com.kireaji.minimallauncherapp.di
 
 import android.content.Context
-import com.kireaji.minimallauncherapp.AppUseCase
+import com.kireaji.minimallauncherapp.usecase.AppUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

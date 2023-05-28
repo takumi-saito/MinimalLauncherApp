@@ -1,4 +1,4 @@
-package com.kireaji.minimallauncherapp
+package com.kireaji.minimallauncherapp.ui
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -11,6 +11,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
+import com.kireaji.minimallauncherapp.ui.compose.AppListScreen
+import com.kireaji.minimallauncherapp.ui.viewmodel.AppListViewModel
+import com.kireaji.minimallauncherapp.R
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

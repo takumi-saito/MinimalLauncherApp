@@ -20,13 +20,14 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun AppListScreen(
-    viewModel: AppListViewModel,
-    onAppClick: (AppInfo) -> Unit
+    viewModel: AppListViewModel
 ) {
     val appInfoListState = viewModel.appInfoListStateFlow.collectAsState()
     AppList(
         appInfoList = appInfoListState.value,
-        onAppClick = onAppClick
+        onAppClick = {
+            viewModel.launchApp(it)
+        }
     )
 }
 

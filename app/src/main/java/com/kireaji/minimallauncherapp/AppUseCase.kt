@@ -1,16 +1,15 @@
 package com.kireaji.minimallauncherapp
 
 import android.content.ActivityNotFoundException
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
-import android.content.pm.ResolveInfo
-import android.os.Build
 import android.util.Log
 
 class AppUseCase {
     companion object {
+        val TAG = AppUseCase::class.java.simpleName
         /**
          * アプリを起動させる
          */
@@ -24,7 +23,7 @@ class AppUseCase {
                 }
                 context.startActivity(intent)
             } catch (e: ActivityNotFoundException) {
-
+                Log.e(TAG, "ActivityNotFoundException", e)
             }
         }
 
@@ -32,31 +31,32 @@ class AppUseCase {
          * ランチャーに表示するアプリ一覧を取得する
          */
         fun getAppInfoList(context: Context): List<AppInfo> {
-            val resolveInfoList: List<ResolveInfo> = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                context.packageManager.queryIntentActivities(
-                    Intent(Intent.ACTION_MAIN, null).addCategory(Intent.CATEGORY_LAUNCHER),
-                    PackageManager.ResolveInfoFlags.of(PackageManager.MATCH_DEFAULT_ONLY.toLong())
+            val pm = context.packageManager
+            val packages: List<ApplicationInfo> = pm.getInstalledApplications(PackageManager.GET_META_DATA)
+            val appInfoList = packages.filter {
+                pm.getLaunchIntentForPackage(it.packageName) != null
+            }.map { packageInfo ->
+                Log.d(TAG, "Installed package :" + packageInfo.packageName)
+                Log.d(TAG, "Launch Intent For Package :" + pm.getLaunchIntentForPackage(packageInfo.packageName))
+                Log.d(TAG, "Application Label :" + pm.getApplicationLabel(packageInfo))
+                Log.d(TAG, "Application Icon :" + pm.getApplicationIcon(packageInfo.packageName).toString())
+                Log.d(TAG, "Source dir : " + packageInfo.sourceDir)
+                Log.d(
+                    TAG,
+                    "Launch Activity :" + context.packageManager.getLaunchIntentForPackage(packageInfo.packageName)
                 )
-            } else {
-                context.packageManager.queryIntentActivities(
-                    Intent(Intent.ACTION_MAIN, null).addCategory(Intent.CATEGORY_LAUNCHER),
-                    PackageManager.GET_META_DATA
+                AppInfo(
+                    packageName = packageInfo.packageName,
+                    icon = pm.getApplicationIcon(packageInfo.packageName), // icon
+                    label = pm.getApplicationLabel(packageInfo).toString(),
+                    componentName = pm.getLaunchIntentForPackage(packageInfo.packageName)?.component,
+                    sourceDir = packageInfo.sourceDir
                 )
             }
-            val pm = context.packageManager
-            return resolveInfoList
+
+            return appInfoList
+                .filter { it.componentName != null }
                 .asSequence()
-                .mapNotNull { it.activityInfo }
-                .filter {
-                    it.packageName != context.packageName
-                }
-                .map {
-                    AppInfo(
-                        icon = it.loadIcon(pm), // icon
-                        label = it.loadLabel(pm).toString(),
-                        componentName = ComponentName(it.packageName, it.name)
-                    )
-                }
                 .sortedBy { it.label }
                 .toList()
         }

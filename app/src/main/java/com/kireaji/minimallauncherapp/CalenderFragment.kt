@@ -39,9 +39,9 @@ class CalenderFragment : Fragment() {
         recyclerView.layoutManager = layoutManager
 
         activity?.registerReceiver(dateTimeChangedReceiver, IntentFilter().also {
-            it.addAction(Intent.ACTION_TIME_TICK);
-            it.addAction(Intent.ACTION_TIMEZONE_CHANGED);
-            it.addAction(Intent.ACTION_TIME_CHANGED);
+            it.addAction(Intent.ACTION_TIME_TICK)
+            it.addAction(Intent.ACTION_TIMEZONE_CHANGED)
+            it.addAction(Intent.ACTION_TIME_CHANGED)
         })
         return root
     }

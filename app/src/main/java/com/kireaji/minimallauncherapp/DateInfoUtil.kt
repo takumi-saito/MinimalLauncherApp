@@ -1,5 +1,7 @@
 package com.kireaji.minimallauncherapp
 
+import com.kireaji.minimallauncherapp.data.model.DateInfo
+import com.kireaji.minimallauncherapp.ui.ColorPalette
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.Month

@@ -1,4 +1,4 @@
-package com.kireaji.minimallauncherapp
+package com.kireaji.minimallauncherapp.ui
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -9,15 +9,22 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import androidx.compose.ui.platform.ComposeView
+import androidx.fragment.app.viewModels
+import com.kireaji.minimallauncherapp.ui.compose.AppListScreen
+import com.kireaji.minimallauncherapp.ui.viewmodel.AppListViewModel
+import com.kireaji.minimallauncherapp.R
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class AppListFragment : Fragment() {
 
-    private lateinit var adapter: AppAdapter
+    private val viewModel: AppListViewModel by viewModels()
+
     private val packageReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            adapter.updateList(AppUseCase.getAppInfoList(this@AppListFragment.requireContext()))
+            context ?: return
+            viewModel.notifyGetAppInfoList()
         }
     }
 
@@ -27,12 +34,12 @@ class AppListFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         val root = inflater.inflate(R.layout.fragment_app_list, container, false)
-        val recyclerView = root.findViewById<RecyclerView>(R.id.recycler_view)
-        adapter = AppAdapter { _, appInfo -> AppUseCase.launch(requireContext(), appInfo) }
-        recyclerView.adapter = adapter
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-
-        adapter.submitList(AppUseCase.getAppInfoList(requireContext()))
+        root.findViewById<ComposeView>(R.id.compose_view).apply {
+            setContent {
+                AppListScreen(viewModel)
+            }
+        }
+        viewModel.notifyGetAppInfoList()
 
         activity?.registerReceiver(packageReceiver, IntentFilter().also {
             it.addAction(Intent.ACTION_PACKAGE_ADDED)

@@ -24,7 +24,7 @@ Issue に対する新機能実装、バグ修正、リファクタリングな�
 #### トリガー方法
 - Issue コメントで `@claude-dev` をメンション
 - Issue に `needs-implementation` ラベルを付与
-- `claude-dev` を assignee に設定
+- `takumi-saito` を assignee に設定
 
 #### 主な機能
 - ✨ 新機能の実装

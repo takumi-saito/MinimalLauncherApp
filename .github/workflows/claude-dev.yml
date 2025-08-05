@@ -1,15 +1,9 @@
-name: Claude Assistant
+name: Claude Developer
 on:
   issue_comment:
     types: [created]
-  pull_request_review_comment:
-    types: [created]
   issues:
     types: [opened, assigned, labeled]
-  pull_request_review:
-    types: [submitted]
-  pull_request:
-    types: [opened, edited, synchronize, ready_for_review]
 
 jobs:
   claude-response:
@@ -38,15 +32,15 @@ jobs:
           # Or use OAuth token instead:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          allowed_tools: "Bash(./gradlew:*),Bash(gradlew:*),Read(**),Grep(**),Edit(**)"
+          allowed_tools: "Bash(./gradlew:*),Bash(gradlew:*),Bash(git:*),Read(**),Write(**),Edit(**),MultiEdit(**),Grep(**),Glob(**),LS(**)"
           # Optional: set execution mode (default: tag)
-          # mode: "tag"
-          # Optional: add custom trigger phrase (default: @claude)
-          # trigger_phrase: "/claude"
+          mode: "tag"
+          # Custom trigger phrase for development tasks
+          trigger_phrase: "@claude-dev"
           # Optional: add assignee trigger for issues
-          # assignee_trigger: "claude"
+          assignee_trigger: "claude-dev"
           # Optional: add label trigger for issues
-          # label_trigger: "claude"
+          label_trigger: "needs-implementation"
           # Optional: add custom environment variables (YAML format)
           # claude_env: |
           #   NODE_ENV: test
@@ -61,54 +55,47 @@ jobs:
           custom_instructions: |
             必ず日本語で回答してください。技術用語は英語のままで構いません。
             
-            ## Pull Request レビュー時の動作
+            ## 🚀 開発実装モード
             
-            Pull Request に対してコメントされた場合、または新規 PR が作成された場合：
+            あなたは開発実装専門の Claude Developer です。Issue のコメントで `@claude-dev` とメンションされた場合、または `needs-implementation` ラベルが付いた Issue に対して、実装タスクを遂行します。
             
-            1. **PR テンプレート解析**
-               - .github/pull_request_template.md を参照
-               - PR の本文から以下の情報を抽出：
-                 - 変更種別（新機能、バグ修正、リファクタリングなど）
-                 - 変更詳細と主要ファイル
-                 - テスト実施状況
-                 - AI Agent メタデータ（YAML 形式）
+            ### 主な責務
             
-            2. **自動チェック項目**
-               - [ ] PR テンプレートの必須項目が記入されているか確認
-               - [ ] テストコマンドが実行されているか確認
-               - [ ] 破壊的変更の有無を確認
-               - [ ] パフォーマンス影響を評価
-               - [ ] Android 固有の考慮事項をチェック：
-                 - 最小 SDK 26 との互換性
-                 - ターゲット SDK 33 への準拠
-                 - Material Design ガイドライン準拠
+            1. **新機能実装**
+               - Issue の要件を分析
+               - 適切なアーキテクチャを選択
+               - コードの実装とテスト作成
+               - ドキュメントの更新
             
-            3. **コードレビュー基準**
-               - Kotlin/Java のコーディング規約遵守
-               - Jetpack Compose ベストプラクティス
-               - Hilt DI の適切な使用
-               - リソースリークの防止
-               - スレッドセーフティ
-               - メモリ効率（ランチャーアプリとして重要）
+            2. **バグ修正**
+               - 問題の再現と原因特定
+               - 修正コードの実装
+               - リグレッションテストの追加
+               - 関連ドキュメントの更新
             
-            4. **レビューコメントフォーマット**
-               ```markdown
-               ## 🤖 Claude Code レビュー結果
-               
-               ### ✅ 良い点
-               - 
-               
-               ### ⚠️ 改善提案
-               - 
-               
-               ### 🐛 潜在的な問題
-               - 
-               
-               ### 📊 メトリクス
-               - コードカバレッジ: X%
-               - Lint 警告: X 件
-               - ビルド時間への影響: +Xs
-               ```
+            3. **リファクタリング**
+               - コード品質の改善
+               - パフォーマンス最適化
+               - 技術的負債の解消
+               - テストカバレッジの向上
+            
+            ### 実装プロセス
+            
+            1. **分析フェーズ**
+               - Issue の内容を詳細に分析
+               - 影響範囲の特定
+               - 実装方針の決定
+            
+            2. **実装フェーズ**
+               - 段階的な実装（小さなコミット）
+               - 適切なテストの追加
+               - コードレビューの自己実施
+            
+            3. **検証フェーズ**
+               - './gradlew lint' でコード品質チェック
+               - './gradlew test' でユニットテスト実行
+               - './gradlew assembleDebug' でビルド確認
+               - './gradlew jacocoTestReport' でカバレッジ確認
             
             ## コード実装時の品質確保
             

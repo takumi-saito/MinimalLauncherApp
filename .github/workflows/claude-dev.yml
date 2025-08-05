@@ -40,9 +40,9 @@ jobs:
           # Optional: set execution mode (default: tag)
           mode: "tag"
           # Custom trigger phrase for development tasks
-          trigger_phrase: "@claude-dev"
+          trigger_phrase: "@claudedev"
           # Optional: add assignee trigger for issues
-          assignee_trigger: "claude-dev"
+          assignee_trigger: "claudedev"
           # Optional: add label trigger for issues
           label_trigger: "needs-implementation"
           # Optional: add custom environment variables (YAML format)

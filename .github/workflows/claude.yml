@@ -8,6 +8,8 @@ on:
     types: [opened, assigned, labeled]
   pull_request_review:
     types: [submitted]
+  pull_request:
+    types: [opened, edited, synchronize, ready_for_review]
 
 jobs:
   claude-response:
@@ -36,7 +38,7 @@ jobs:
           # Or use OAuth token instead:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          allowed_tools: "Bash(./gradlew:*),Bash(gradlew:*)"
+          allowed_tools: "Bash(./gradlew:*),Bash(gradlew:*),Read(**),Grep(**),Edit(**)"
           # Optional: set execution mode (default: tag)
           # mode: "tag"
           # Optional: add custom trigger phrase (default: @claude)
@@ -59,14 +61,66 @@ jobs:
           custom_instructions: |
             必ず日本語で回答してください。技術用語は英語のままで構いません。
             
+            ## Pull Request レビュー時の動作
+            
+            Pull Request に対してコメントされた場合、または新規 PR が作成された場合：
+            
+            1. **PR テンプレート解析**
+               - .github/pull_request_template.md を参照
+               - PR の本文から以下の情報を抽出：
+                 - 変更種別（新機能、バグ修正、リファクタリングなど）
+                 - 変更詳細と主要ファイル
+                 - テスト実施状況
+                 - AI Agent メタデータ（YAML 形式）
+            
+            2. **自動チェック項目**
+               - [ ] PR テンプレートの必須項目が記入されているか確認
+               - [ ] テストコマンドが実行されているか確認
+               - [ ] 破壊的変更の有無を確認
+               - [ ] パフォーマンス影響を評価
+               - [ ] Android 固有の考慮事項をチェック：
+                 - 最小 SDK 26 との互換性
+                 - ターゲット SDK 33 への準拠
+                 - Material Design ガイドライン準拠
+            
+            3. **コードレビュー基準**
+               - Kotlin/Java のコーディング規約遵守
+               - Jetpack Compose ベストプラクティス
+               - Hilt DI の適切な使用
+               - リソースリークの防止
+               - スレッドセーフティ
+               - メモリ効率（ランチャーアプリとして重要）
+            
+            4. **レビューコメントフォーマット**
+               ```markdown
+               ## 🤖 Claude Code レビュー結果
+               
+               ### ✅ 良い点
+               - 
+               
+               ### ⚠️ 改善提案
+               - 
+               
+               ### 🐛 潜在的な問題
+               - 
+               
+               ### 📊 メトリクス
+               - コードカバレッジ: X%
+               - Lint 警告: X 件
+               - ビルド時間への影響: +Xs
+               ```
+            
+            ## コード実装時の品質確保
+            
             コード実装後は、以下のコマンドを順番に必ず実行してコード品質を確保してください：
             1. './gradlew lint' を実行して Android lint の問題をチェック
             2. 発見された lint の警告やエラーを報告
             3. lint の問題がある場合は修正を試みる
-            4. './gradlew assembleDebug' を実行してビルドが成功することを確認
-            5. ビルドエラーが発生した場合は、エラー内容を報告して修正を試みる
+            4. './gradlew test' を実行してユニットテストを確認
+            5. './gradlew assembleDebug' を実行してビルドが成功することを確認
+            6. ビルドエラーが発生した場合は、エラー内容を報告して修正を試みる
             
-            重要：コード実装タスクの最終ステップとして、必ず lint チェックとビルド確認を実行してください。
+            重要：コード実装タスクの最終ステップとして、必ず lint チェック、テスト、ビルド確認を実行してください。
             
             ## コミットメッセージ作成ルール
             
@@ -78,3 +132,20 @@ jobs:
             3. フォーマット `:emoji: Subject` に従う
             4. Subject は50文字以内、命令形で記述
             5. Body がある場合は、Subject と1行空けて、72文字以内で What/Why を記載
+            
+            ## Android 開発固有のガイドライン
+            
+            1. **Compose 移行サポート**
+               - Fragment から Compose への段階的移行を支援
+               - Compose のベストプラクティスを適用
+               - State hoisting とリコンポジション最適化
+            
+            2. **パフォーマンス最適化**
+               - ランチャーアプリとしての起動速度を重視
+               - メモリ使用量の最小化
+               - バッテリー消費の考慮
+            
+            3. **テスト戦略**
+               - JUnit でのユニットテスト
+               - Compose UI テスト
+               - Espresso での統合テスト

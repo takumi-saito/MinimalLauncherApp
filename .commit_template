@@ -1,0 +1,35 @@
+
+
+
+# ==== Emojis ====
+# ✨  :sparkles: 機能追加
+# 👍  :+1: 機能改善
+# 🐛  :bug: バグ修正
+# 🔥  :fire: 不要な機能やファイルの削除
+# 🎨  :art: UIやリソースの追加・変更
+# ♻️  :recycle: リファクタリング
+# 📚  :books: ドキュメントやコメントの追加・変更
+# 👌  :ok_hand: 指摘事項の対応
+# 👕  :shirt: Lint対応やコードスタイルの修正
+# 🔖  :bookmark: アプリのバージョンアップ
+# 🆙  :up: 依存パッケージなどの追加やアップデート
+# 🚀  :rocket: パフォーマンス改善
+# 💚  :green_heart: テストやCI関連の追加・変更
+
+# ==== フォーマット ====
+# :emoji: Subject
+#
+# Commit body...
+
+# ==== 7大原則 ====
+# 1. subjectとbodyは1行あけましょう
+# 2. subjectは50文字以内にしましょう
+# 3. subjectの1文字目は大文字にしましょう（1文字目がアルファベットの場合）
+# 4. subjectにperiod（句読点）は不要です
+# 5. subjectは命令形にしましょう（丁寧語・謙譲語は不要）
+# 6. bodyは1行あたり72文字以内にしましょう
+# 7. howよりwhatやwhyをbodyに記述しましょう（方法ではなく理由を記載する）
+#
+# How to Write a Git Commit Message http://chris.beams.io/posts/git-commit/
+
+# for http://memo.goodpatch.co/2016/07/beautiful-commits-with-emojis/

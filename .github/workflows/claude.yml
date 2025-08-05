@@ -1,0 +1,80 @@
+name: Claude Assistant
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  issues:
+    types: [opened, assigned, labeled]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  claude-response:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93 # v4.0.0
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # Better than caching and/or extensions of actions/setup-java
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
+        with:
+          gradle-version: wrapper
+
+      - uses: anthropics/claude-code-action@beta
+        with:
+          # anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Or use OAuth token instead:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          allowed_tools: "Bash(./gradlew:*),Bash(gradlew:*)"
+          # Optional: set execution mode (default: tag)
+          # mode: "tag"
+          # Optional: add custom trigger phrase (default: @claude)
+          # trigger_phrase: "/claude"
+          # Optional: add assignee trigger for issues
+          # assignee_trigger: "claude"
+          # Optional: add label trigger for issues
+          # label_trigger: "claude"
+          # Optional: add custom environment variables (YAML format)
+          # claude_env: |
+          #   NODE_ENV: test
+          #   DEBUG: true
+          #   API_URL: https://api.example.com
+          # Optional: limit the number of conversation turns
+          # max_turns: "5"
+          # Optional: grant additional permissions (requires corresponding GitHub token permissions)
+          # additional_permissions: |
+          #   actions: read
+          # Custom instructions for Claude
+          custom_instructions: |
+            必ず日本語で回答してください。技術用語は英語のままで構いません。
+            
+            コード実装後は、以下のコマンドを順番に必ず実行してコード品質を確保してください：
+            1. './gradlew lint' を実行して Android lint の問題をチェック
+            2. 発見された lint の警告やエラーを報告
+            3. lint の問題がある場合は修正を試みる
+            4. './gradlew assembleDebug' を実行してビルドが成功することを確認
+            5. ビルドエラーが発生した場合は、エラー内容を報告して修正を試みる
+            
+            重要：コード実装タスクの最終ステップとして、必ず lint チェックとビルド確認を実行してください。
+            
+            ## コミットメッセージ作成ルール
+            
+            git commit を作成する際は、必ずこのリポジトリの .commit_template ファイルを参照し、そこに記載されているフォーマットと絵文字のルールに完全に従ってください。
+            
+            具体的には：
+            1. .commit_template ファイルを読み込んで内容を確認する
+            2. 適切な絵文字を選択（:sparkles:, :+1:, :bug: など）
+            3. フォーマット `:emoji: Subject` に従う
+            4. Subject は50文字以内、命令形で記述
+            5. Body がある場合は、Subject と1行空けて、72文字以内で What/Why を記載

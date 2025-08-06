@@ -77,7 +77,7 @@ app/src/main/java/com/kireaji/minimallauncherapp/
 - **UI**: Jetpack Compose + 従来の View システム（移行中）
 - **DI**: Hilt 2.44
 - **ビルドツール**: Gradle 8.10.1、Kotlin 1.8.20
-- **最小 SDK**: 26 / ターゲット SDK: 33
+- **最小 SDK**: 26 / ターゲット SDK: 35 (Android 15)
 - **Java バージョン**: 17
 - **テスト**: JUnit 4.13.2、Mockito 3.12.4
 - **Firebase**: Analytics、Crashlytics、Performance Monitoring

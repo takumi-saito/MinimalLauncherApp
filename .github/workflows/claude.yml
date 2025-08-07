@@ -73,9 +73,9 @@ jobs:
                     "mcp-server-google-analytics"
                   ],
                   "env": {
-                    "GOOGLE_CLIENT_EMAIL": ${{ secrets.GOOGLE_CLIENT_EMAIL }},
-                    "GOOGLE_PRIVATE_KEY": ${{ steps.decode_key.outputs.DECODED_PRIVATE_KEY }},
-                    "GA_PROPERTY_ID": ${{ secrets.GA_PROPERTY_ID }}
+                    "GOOGLE_CLIENT_EMAIL": "ga4-claude-access@minimal-launcher-c1598.iam.gserviceaccount.com",
+                    "GOOGLE_PRIVATE_KEY": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCVW39BZf+QUfLg\nUnE3igoeQ+QQUW+0dL+0z2yYHcGlHMPAL/0mMDjxuWHM8/xWcx/dE2/3LITczCbb\nrZPRrtMG0gCa0+/T6hFfYFwPYyEn/gyNiUnzw5ojlTXNce0J1ATt1uA+57DZGAtZ\neaYxChFDxU/bI4q0Y5YaWAOwYgTBET/yX9QXLV6N1KC2dIkdIlUCpS21bmjnb+t3\nr9t26hwekYvBXZqwmSBuNFo4LbrMyFXJu+XnBECuo1tHJ63mnET3i35jQqZzDm1W\nBRK8g16F6qFeZX7o5DYz5j5cGpo+qKX1JiRPlfUI9aHmeJu211chJ/xOHitN9aF0\nVQt5PUnNAgMBAAECggEAH8xwJntR0ucvn4TN5/Yyu0jXCIZeEvx8SEGVLDnBnaan\nIobVDclchlJiuSEFC17NXOMjhmtrChtI9qJZA16GPUB+sngG6oY+FqFMWFZRm9Mh\n1wxwuz5c1dCRuODVh68lMYH7Ekl/xGizGeSldnFfRZ9/pfdGM6u0LH2qo2Xq/zOa\noRK2/6oKMP0DSsSSK8gnD+awLREkOY5DP01yUSAOQZH4xdLMYXMRpA6MgR+79Gq7\nAKbdxxFw7tNkXuMV64FSPyK8mGEYVk0HojjiB/P/CUFSZwQ2AWGvKYYxYgj0te0k\nHyxj+7AMZWoY+zqviA5KBUq+rOBDb62RzATwCuV+PQKBgQDMtcuN1G75AYdCbiSm\n2QxHkv98KOsre+yJBPuh4byD0I4v6n8rCiy0OU+OWaafzDJTNex3YKIkuVqUQFjr\n/t08ks4+ZaQ1tbooqgkB6Dcm1G+jVBWfN/z/3K80F4T9eDoYvqUB7n+REHD3hpjT\nZJLP4s6gj1XWJXjEM4MADRVhywKBgQC6x1oYBL9adzxa7c6qNV2cH0Wy8qDBYR6k\nooEdxqwcaYenp3eh5hlKFAxvQg66Mvk0zig5jrV6t5OKBERwzJ/dgelquC4WMDaa\nEuwB17EEkrSXQKCL6AYw3o58LqKD5fk88AqW5s1Ueia4VLA7DURJ0w7sh+N2bEM6\nBlWJ5L4vxwKBgEvcxz2dTy7KSTTuGnkWkH1p1XJOu7AWsbapeRMp07HJtRe+wDfU\nAnMblgb75Ert4myB3Er1LcGMSywLmKiEf7p18SaghjU9TmrJcKMbSm0CZwjRHV4u\n4nxzbR5R5QAF8QnAhOftWasJu8OPRs14RQvzUn2gAMBmjJWxPUfkkVr3AoGAHDb5\nGR++eEAC0gmSaovdNDRVJw8X0Z6GLoCN2J2majRW1bCqlb5Ym6QjrLrh1qbUlnF+\nChPQvlT06Kh0XkXK8H8rb3+bFqb52JR7KlwW1YYD2cVde0T1inRUOdYhnqMi312z\ne9ApvFUnfDju1jzO0Agd/QUaC02XajCCw23WfQkCgYAGWeV7oL88B1by1NluC6ph\ncYkQSw9jHkVHURXe1v7LBsweinEckxcaqZYTamlcPXwOULXzBqD+sw8FjWdvP//W\nBQcUfbnVyg6j2qv1Miv5dAP8rqcb8sFI5kRqKuKOvcgxZDnx9bDoLeZR9NG+Eqg0\nmp203MpvWooCK8cS2oSatw==\n-----END PRIVATE KEY-----\n",
+                    "GA_PROPERTY_ID": "250425868"
                   }
                 }
               }

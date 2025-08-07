@@ -1,0 +1,79 @@
+name: Claude Developer
+on:
+  issue_comment:
+    types: [created]
+  issues:
+    types: [opened, assigned, labeled]
+
+jobs:
+  claude-response:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Decode and save google-services.json
+        if: ${{ env.GOOGLE_SERVICES_JSON_BASE64 != '' }}
+        env:
+          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+        run: |
+          echo "$GOOGLE_SERVICES_JSON_BASE64" | base64 -d > app/google-services.json
+          echo "google-services.json has been created successfully"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93 # v4.0.0
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # Better than caching and/or extensions of actions/setup-java
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
+        with:
+          gradle-version: wrapper
+
+      - name: Decode Google Private Key
+        id: decode_key
+        if: ${{ env.GOOGLE_PRIVATE_KEY_BASE64 != '' }}
+        env:
+          GOOGLE_PRIVATE_KEY_BASE64: ${{ secrets.GOOGLE_PRIVATE_KEY_BASE64 }}
+        run: |
+          DECODED_KEY=$(echo "$GOOGLE_PRIVATE_KEY_BASE64" | base64 -d)
+          echo "DECODED_PRIVATE_KEY<<EOF" >> $GITHUB_OUTPUT
+          echo "$DECODED_KEY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - uses: anthropics/claude-code-action@beta
+        with:
+          # anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Or use OAuth token instead:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          allowed_tools: "Bash(./gradlew:*),Bash(gradlew:*),Bash(git:*),Read(**),Write(**),Edit(**),MultiEdit(**),Grep(**),Glob(**),LS(**)"
+          mode: "tag"
+          trigger_phrase: "@claude"
+          mcp_config: |
+            {
+              "mcpServers": {
+                "google-analytics": {
+                  "command": "npx",
+                  "args": [
+                    "-y",
+                    "mcp-server-google-analytics"
+                  ],
+                  "env": {
+                    "GOOGLE_CLIENT_EMAIL": "${{ secrets.GOOGLE_CLIENT_EMAIL }}",
+                    "GOOGLE_PRIVATE_KEY": "${{ steps.decode_key.outputs.DECODED_PRIVATE_KEY }}",
+                    "GA_PROPERTY_ID": "${{ secrets.GA_PROPERTY_ID }}"
+                  }
+                }
+              }
+            }
+          custom_instructions: |
+            必ず日本語で回答してください。技術用語は英語のままで構いません。

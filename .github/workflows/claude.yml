@@ -68,9 +68,9 @@ jobs:
                     "mcp-server-google-analytics"
                   ],
                   "env": {
-                    "GOOGLE_CLIENT_EMAIL": "${{ secrets.GOOGLE_CLIENT_EMAIL }}",
-                    "GOOGLE_PRIVATE_KEY": "${{ steps.decode_key.outputs.DECODED_PRIVATE_KEY }}",
-                    "GA_PROPERTY_ID": "${{ secrets.GA_PROPERTY_ID }}"
+                    "GOOGLE_CLIENT_EMAIL": ${{ secrets.GOOGLE_CLIENT_EMAIL }},
+                    "GOOGLE_PRIVATE_KEY": ${{ steps.decode_key.outputs.DECODED_PRIVATE_KEY }},
+                    "GA_PROPERTY_ID": ${{ secrets.GA_PROPERTY_ID }}
                   }
                 }
               }

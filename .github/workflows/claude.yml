@@ -1,4 +1,4 @@
-name: Claude Developer
+name: Claude Assistant
 on:
   issue_comment:
     types: [created]

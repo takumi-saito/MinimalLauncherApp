@@ -13,12 +13,12 @@ plugins {
 
 android {
     namespace ="com.kireaji.minimallauncherapp"
-    compileSdk = 33
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.kireaji.minimallauncherapp"
         minSdk = 26
-        targetSdk = 33
+        targetSdk = 35
         versionCode = 130
         versionName = "1.3.0"
 

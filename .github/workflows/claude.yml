@@ -38,6 +38,11 @@ jobs:
         with:
           gradle-version: wrapper
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Decode Google Private Key
         id: decode_key
         if: ${{ env.GOOGLE_PRIVATE_KEY_BASE64 != '' }}
@@ -55,7 +60,7 @@ jobs:
           # Or use OAuth token instead:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          allowed_tools: "Bash(./gradlew:*),Bash(gradlew:*),Bash(git:*),Read(**),Write(**),Edit(**),MultiEdit(**),Grep(**),Glob(**),LS(**)"
+          allowed_tools: "Bash(./gradlew:*),Bash(gradlew:*),Bash(git:*),Bash(npm:*),Bash(npx:*),Bash(node:*),Read(**),Write(**),Edit(**),MultiEdit(**),Grep(**),Glob(**),LS(**)"
           mode: "tag"
           trigger_phrase: "@claude"
           mcp_config: |

@@ -60,7 +60,7 @@ jobs:
           # Or use OAuth token instead:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          allowed_tools: "Bash(./gradlew:*),Bash(gradlew:*),Bash(git:*),Bash(npm:*),Bash(npx:*),Bash(node:*),Read(**),Write(**),Edit(**),MultiEdit(**),Grep(**),Glob(**),LS(**)"
+          allowed_tools: "Bash(./gradlew:*),Bash(gradlew:*),Bash(git:*),Bash(npm:*),Bash(npx:*),Bash(node:*),Read(**),Write(**),Edit(**),MultiEdit(**),Grep(**),Glob(**),LS(**),mcp__google-analytics__getActiveUsers,mcp__google-analytics__runReport,mcp__google-analytics__getPageViews,mcp__google-analytics__getEvents,mcp__google-analytics__getUserBehavior"
           mode: "tag"
           trigger_phrase: "@claude"
           mcp_config: |
@@ -73,9 +73,9 @@ jobs:
                     "mcp-server-google-analytics"
                   ],
                   "env": {
-                    "GOOGLE_CLIENT_EMAIL": ${{ secrets.GOOGLE_CLIENT_EMAIL }},
-                    "GOOGLE_PRIVATE_KEY": ${{ steps.decode_key.outputs.DECODED_PRIVATE_KEY }},
-                    "GA_PROPERTY_ID": ${{ secrets.GA_PROPERTY_ID }}
+                    "GOOGLE_CLIENT_EMAIL": "${{ secrets.GOOGLE_CLIENT_EMAIL }}",
+                    "GOOGLE_PRIVATE_KEY": "${{ secrets.GOOGLE_PRIVATE_KEY }}",
+                    "GA_PROPERTY_ID": "${{ secrets.GA_PROPERTY_ID }}"
                   }
                 }
               }

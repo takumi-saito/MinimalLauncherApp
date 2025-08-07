@@ -1,0 +1,16 @@
+{
+  "name": "minimal-launcher-analytics",
+  "version": "1.0.0",
+  "description": "MAU analytics for MinimalLauncherApp",
+  "main": "mau_analytics.js",
+  "scripts": {
+    "mau": "node mau_analytics.js",
+    "test": "node -e \"console.log('MAU Analytics test completed')\""
+  },
+  "dependencies": {
+    "googleapis": "^128.0.0"
+  },
+  "keywords": ["analytics", "mau", "google-analytics"],
+  "author": "MinimalLauncherApp",
+  "license": "MIT"
+}

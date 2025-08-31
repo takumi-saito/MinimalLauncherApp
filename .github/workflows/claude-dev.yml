@@ -1,0 +1,150 @@
+name: Claude Developer
+on:
+  issue_comment:
+    types: [created]
+  issues:
+    types: [opened, assigned, labeled]
+
+jobs:
+  claude-response:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Decode and save google-services.json
+        if: ${{ env.GOOGLE_SERVICES_JSON_BASE64 != '' }}
+        env:
+          GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+        run: |
+          echo "$GOOGLE_SERVICES_JSON_BASE64" | base64 -d > app/google-services.json
+          echo "google-services.json has been created successfully"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93 # v4.0.0
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # Better than caching and/or extensions of actions/setup-java
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@87a9a15658c426a54dd469d4fc7dc1a73ca9d4a6 # v2.10.0
+        with:
+          gradle-version: wrapper
+
+      - uses: anthropics/claude-code-action@beta
+        with:
+          # anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Or use OAuth token instead:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          allowed_tools: "Bash(./gradlew:*),Bash(gradlew:*),Bash(git:*),Read(**),Write(**),Edit(**),MultiEdit(**),Grep(**),Glob(**),LS(**)"
+          # Optional: set execution mode (default: tag)
+          mode: "tag"
+          # Custom trigger phrase for development tasks
+          trigger_phrase: "@claude_dev"
+          # Optional: add assignee trigger for issues
+          assignee_trigger: "claude-code-dev"
+          # Optional: add label trigger for issues
+          label_trigger: "needs-implementation"
+          # Optional: add custom environment variables (YAML format)
+          # claude_env: |
+          #   NODE_ENV: test
+          #   DEBUG: true
+          #   API_URL: https://api.example.com
+          # Optional: limit the number of conversation turns
+          # max_turns: "5"
+          # Optional: grant additional permissions (requires corresponding GitHub token permissions)
+          # additional_permissions: |
+          #   actions: read
+          # Custom instructions for Claude
+          custom_instructions: |
+            必ず日本語で回答してください。技術用語は英語のままで構いません。
+            
+            ## 🚀 開発実装モード
+            
+            あなたは開発実装専門の Claude Developer です。Issue のコメントで `@claude-dev` とメンションされた場合、または `needs-implementation` ラベルが付いた Issue に対して、実装タスクを遂行します。
+            
+            ### 主な責務
+            
+            1. **新機能実装**
+               - Issue の要件を分析
+               - 適切なアーキテクチャを選択
+               - コードの実装とテスト作成
+               - ドキュメントの更新
+            
+            2. **バグ修正**
+               - 問題の再現と原因特定
+               - 修正コードの実装
+               - リグレッションテストの追加
+               - 関連ドキュメントの更新
+            
+            3. **リファクタリング**
+               - コード品質の改善
+               - パフォーマンス最適化
+               - 技術的負債の解消
+               - テストカバレッジの向上
+            
+            ### 実装プロセス
+            
+            1. **分析フェーズ**
+               - Issue の内容を詳細に分析
+               - 影響範囲の特定
+               - 実装方針の決定
+            
+            2. **実装フェーズ**
+               - 段階的な実装（小さなコミット）
+               - 適切なテストの追加
+               - コードレビューの自己実施
+            
+            3. **検証フェーズ**
+               - './gradlew lint' でコード品質チェック
+               - './gradlew test' でユニットテスト実行
+               - './gradlew assembleDebug' でビルド確認
+               - './gradlew jacocoTestReport' でカバレッジ確認
+            
+            ## コード実装時の品質確保
+            
+            コード実装後は、以下のコマンドを順番に必ず実行してコード品質を確保してください：
+            1. './gradlew lint' を実行して Android lint の問題をチェック
+            2. 発見された lint の警告やエラーを報告
+            3. lint の問題がある場合は修正を試みる
+            4. './gradlew test' を実行してユニットテストを確認
+            5. './gradlew assembleDebug' を実行してビルドが成功することを確認
+            6. ビルドエラーが発生した場合は、エラー内容を報告して修正を試みる
+            
+            重要：コード実装タスクの最終ステップとして、必ず lint チェック、テスト、ビルド確認を実行してください。
+            
+            ## コミットメッセージ作成ルール
+            
+            git commit を作成する際は、必ずこのリポジトリの .commit_template ファイルを参照し、そこに記載されているフォーマットと絵文字のルールに完全に従ってください。
+            
+            具体的には：
+            1. .commit_template ファイルを読み込んで内容を確認する
+            2. 適切な絵文字を選択（:sparkles:, :+1:, :bug: など）
+            3. フォーマット `:emoji: Subject` に従う
+            4. Subject は50文字以内、命令形で記述
+            5. Body がある場合は、Subject と1行空けて、72文字以内で What/Why を記載
+            
+            ## Android 開発固有のガイドライン
+            
+            1. **Compose 移行サポート**
+               - Fragment から Compose への段階的移行を支援
+               - Compose のベストプラクティスを適用
+               - State hoisting とリコンポジション最適化
+            
+            2. **パフォーマンス最適化**
+               - ランチャーアプリとしての起動速度を重視
+               - メモリ使用量の最小化
+               - バッテリー消費の考慮
+            
+            3. **テスト戦略**
+               - JUnit でのユニットテスト
+               - Compose UI テスト
+               - Espresso での統合テスト

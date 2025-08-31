@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.kireaji.minimallauncherapp.data.model.DateInfo
 
 private val ITEM_CALLBACK = object : DiffUtil.ItemCallback<DateInfo>() {
 

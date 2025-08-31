@@ -1,4 +1,4 @@
-package com.kireaji.minimallauncherapp
+package com.kireaji.minimallauncherapp.ui
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -11,7 +11,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.kireaji.minimallauncherapp.DateAdapter
+import com.kireaji.minimallauncherapp.DateInfoUtil
+import com.kireaji.minimallauncherapp.R
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class CalenderFragment : Fragment() {
 
     private lateinit var adapter: DateAdapter
@@ -39,9 +44,9 @@ class CalenderFragment : Fragment() {
         recyclerView.layoutManager = layoutManager
 
         activity?.registerReceiver(dateTimeChangedReceiver, IntentFilter().also {
-            it.addAction(Intent.ACTION_TIME_TICK);
-            it.addAction(Intent.ACTION_TIMEZONE_CHANGED);
-            it.addAction(Intent.ACTION_TIME_CHANGED);
+            it.addAction(Intent.ACTION_TIME_TICK)
+            it.addAction(Intent.ACTION_TIMEZONE_CHANGED)
+            it.addAction(Intent.ACTION_TIME_CHANGED)
         })
         return root
     }

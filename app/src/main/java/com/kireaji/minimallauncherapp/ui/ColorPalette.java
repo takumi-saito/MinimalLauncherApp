@@ -1,4 +1,4 @@
-package com.kireaji.minimallauncherapp;
+package com.kireaji.minimallauncherapp.ui;
 
 import androidx.annotation.ColorInt;
 

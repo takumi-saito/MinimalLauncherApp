@@ -39,7 +39,7 @@ jobs:
 
     - name: Restore keystore.jks
       run: |
-        echo "${{ secrets.RELEASE_JKS_BASE64 }}" | base64 -d > release.jks
+        echo "${{ secrets.RELEASE_JKS_BASE64 }}" | base64 -d > ./release.jks
         ls -l release.jks
 
     - name: Restore keystore.properties

@@ -1,0 +1,57 @@
+name: Android CI
+
+on:
+  push:
+    branches:
+      - develop
+  pull_request:
+    branches:
+      - develop
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: '21'
+
+    - name: Restore Gradle cache
+      uses: gradle/actions/setup-gradle@v4
+
+    - name: Decode and save google-services.json
+      if: ${{ env.GOOGLE_SERVICES_JSON_BASE64 != '' }}
+      env:
+        GOOGLE_SERVICES_JSON_BASE64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+      run: |
+        echo "$GOOGLE_SERVICES_JSON_BASE64" | base64 -d > app/google-services.json
+        echo "google-services.json has been created successfully"
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x ./gradlew
+
+    - name: Restore keystore.jks
+      run: |
+        echo "${{ secrets.RELEASE_JKS_BASE64 }}" | base64 -d > release.jks
+        ls -l release.jks
+
+    - name: Restore keystore.properties
+      run: |
+        echo "${{ secrets.KEYSTORE_PROPERTIES }}" > keystore.properties
+        cat keystore.properties
+
+    - name: Build AAB
+      run: ./gradlew bundleRelease --stacktrace --no-daemon
+
+    - name: Upload AAB artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-release-aab
+        path: app/build/outputs/bundle/release/*.aab

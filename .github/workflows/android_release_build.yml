@@ -44,12 +44,7 @@ jobs:
 
     - name: Restore keystore.properties
       run: |
-        cat << EOF > keystore.properties
-        storeFile=release.jks
-        storePassword=${{ secrets.STORE_PASSWORD }}
-        keyAlias=${{ secrets.KEY_ALIAS }}
-        keyPassword=${{ secrets.KEY_PASSWORD }}
-        EOF
+        echo "${{ secrets.KEYSTORE_PROPERTIES }}" > keystore.properties
         cat keystore.properties
 
     - name: Build AAB

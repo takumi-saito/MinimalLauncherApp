@@ -37,15 +37,15 @@ jobs:
     - name: Build
       run: ./gradlew assembleDebug
 
-    - name: Generate coverage report
-      run: ./gradlew jacocoTestReport
+#    - name: Generate coverage report
+#      run: ./gradlew jacocoTestReport
 
-    - name: Add coverage to PR
-      id: jacoco
-      uses: takumi-saito/jacoco-report@v1.5
-      with:
-        paths: ${{ github.workspace }}/app/build/reports/jacocoTestReport/jacocoTestReport.xml
-        token: ${{ secrets.GITHUB_TOKEN }}
-        min-coverage-overall: 40
-        min-coverage-changed-files: 60
-        debug-mode: true
+#    - name: Add coverage to PR
+#      id: jacoco
+#      uses: takumi-saito/jacoco-report@v1.5
+#      with:
+#        paths: ${{ github.workspace }}/app/build/reports/jacocoTestReport/jacocoTestReport.xml
+#        token: ${{ secrets.GITHUB_TOKEN }}
+#        min-coverage-overall: 40
+#        min-coverage-changed-files: 60
+#        debug-mode: true

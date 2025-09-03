@@ -1,0 +1,21 @@
+name: TechDebt Metrics
+on:
+  workflow_dispatch:
+  pull_request:
+  schedule:
+    - cron: "0 2 * * 1"   # 毎週月曜 11:00 JST
+
+permissions:
+  contents: read
+
+concurrency:
+  group: metrics-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  call:
+    uses: takumi-saito/android-legacy-metrics/.github/workflows/run-metrics.yml@main
+    with:
+      repo_slug: ${{ github.repository }}   # org/repo を自動入力
+    secrets:
+      LEGACY_GRAPH_TOKEN: ${{ secrets.LEGACY_GRAPH_TOKEN }}

@@ -6,7 +6,7 @@ on:
       - release
 
 jobs:
-  release-build:
+  deploy-google-play-console:
 
     runs-on: ubuntu-latest
 
@@ -32,9 +32,9 @@ jobs:
         with:
           serviceAccountJson: service_account.json
           packageName: com.kireaji.minimallauncherapp
-          releaseFile: ./app-release.aab
-          track: beta
-          whatsNewDirectory: whatsnew/
+          releaseFile: app-release.aab
+          track: internal
+          whatsNewDirectory: distribution/whatsnew
       # slack
       - uses: 8398a7/action-slack@v2.5.2
         if: failure()

@@ -1,0 +1,55 @@
+name: Deploy Google Play Console
+
+on:
+  push:
+    branches:
+      - release
+
+jobs:
+  release-build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # サービスアカウント作成
+      - name: Create service_account.json
+        id: createServiceAccount
+        run: echo '${{ secrets.SERVICE_ACCOUNT_JSON }}' > service_account.json
+
+      # deploy
+      - name: Deploy to Play Store
+        id: deploy
+        uses: r0adkll/upload-google-play@v1.0.15
+        with:
+          serviceAccountJson: service_account.json
+          packageName: com.kireaji.minimallauncherapp
+          releaseFile: ./app-release.aab
+          track: beta
+          whatsNewDirectory: whatsnew/
+      # slack
+      - uses: 8398a7/action-slack@v2.5.2
+        if: failure()
+        with:
+          status: ${{ job.status }}
+          text: リリースビルドが失敗しました。確認をお願いします。
+          mention: 'here'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+      - uses: 8398a7/action-slack@v2.5.2
+        if: success()
+        with:
+          status: ${{ job.status }}
+          text: リリースビルドが完了しました！
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

@@ -1,10 +1,7 @@
-name: Android CI
+name: Android Debug Build
 
 on:
   push:
-    branches:
-      - develop
-  pull_request:
     branches:
       - develop
 

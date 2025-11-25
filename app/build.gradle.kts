@@ -28,7 +28,7 @@ android {
         applicationId = "com.kireaji.minimallauncherapp"
         minSdk = 26
         targetSdk = 35
-        versionCode = 131
+        versionCode = 132
         versionName = "1.3.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

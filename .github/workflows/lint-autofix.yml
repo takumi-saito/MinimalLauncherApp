@@ -21,30 +21,13 @@ jobs:
     - name: Run Android Lint
       run: ./gradlew lintDebug
 
+    - name: Install xmllint
+      run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+
     - name: Parse Lint XML
       id: parse
       run: |
         REPORT=app/build/reports/lint-results-debug.xml
-
-        # デバッグ: レポートファイルの存在確認
-        echo "=== Debug: Checking report file ==="
-        ls -la $REPORT || echo "Report file not found!"
-
-        # デバッグ: xmllint バージョン確認
-        echo "=== Debug: xmllint version ==="
-        xmllint --version 2>&1 || echo "xmllint not found"
-
-        # デバッグ: XML の先頭を確認
-        echo "=== Debug: XML head ==="
-        head -10 $REPORT
-
-        # デバッグ: grep で issue タグがあるか確認
-        echo "=== Debug: grep issue count ==="
-        grep -c '<issue' $REPORT || echo "No issue tags found"
-
-        # デバッグ: xmllint エラー出力を確認
-        echo "=== Debug: xmllint with stderr ==="
-        xmllint --xpath '//issue[1]/@id' $REPORT 2>&1 || echo "xpath failed"
 
         # Issue ID を抽出（最初の Error または Warning）
         ISSUE_ID=$(xmllint --xpath \

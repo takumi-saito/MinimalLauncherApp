@@ -113,30 +113,15 @@ jobs:
           core.setOutput('issue_number', issue.data.number);
           console.log(`Created issue #${issue.data.number}`);
 
-    - name: Claude Code Auto Fix
+    - name: Comment to trigger Claude Code
       if: steps.parse.outputs.has_issue == 'true'
-      uses: anthropics/claude-code-action@v1
+      uses: actions/github-script@v7
       with:
-        claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        direct_prompt: |
-          Android Lint で検出された Issue を **1件だけ** 修正してください。
-
-          ## 修正対象
-          - Issue ID: **${{ steps.parse.outputs.issue_id }}**
-          - GitHub Issue: #${{ steps.create_issue.outputs.issue_number }}
-
-          ## Issue の詳細 (XML)
-          ```xml
-          ${{ steps.parse.outputs.issue_content }}
-          ```
-
-          ## 必須ルール
-          - 上記の Issue **1件のみ** を修正すること
-          - 修正後、以下のブランチ名で commit & push してください:
-            `auto/lint-${{ steps.create_issue.outputs.issue_number }}-${{ steps.parse.outputs.issue_id }}`
-          - commit メッセージに `Closes #${{ steps.create_issue.outputs.issue_number }}` を含めてください
-          - PR の diff は最小限にし、不要なリファクタは行わない
-          - コードスタイルは既存に合わせる
-
-          XML 内の location 要素に記載されたファイルパスと行番号を参照して修正してください。
+        script: |
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: ${{ steps.create_issue.outputs.issue_number }},
+            body: '@claude issueを参照し実装してください'
+          });
+          console.log(`Added comment to issue #${{ steps.create_issue.outputs.issue_number }}`);

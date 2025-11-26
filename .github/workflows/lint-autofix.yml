@@ -73,27 +73,41 @@ jobs:
       id: create_issue
       if: steps.parse.outputs.has_issue == 'true'
       uses: actions/github-script@v7
+      env:
+        ISSUE_ID: ${{ steps.parse.outputs.issue_id }}
+        ISSUE_MESSAGE: ${{ steps.parse.outputs.message }}
+        ISSUE_FILE: ${{ steps.parse.outputs.file }}
+        ISSUE_LINE: ${{ steps.parse.outputs.line }}
+        ISSUE_CONTENT: ${{ steps.parse.outputs.issue_content }}
       with:
         script: |
-          const issue = await github.rest.issues.create({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            title: `[Lint] ${{ steps.parse.outputs.issue_id }}`,
-            body: `## Android Lint Issue
+          const issueId = process.env.ISSUE_ID;
+          const message = process.env.ISSUE_MESSAGE;
+          const file = process.env.ISSUE_FILE;
+          const line = process.env.ISSUE_LINE;
+          const content = process.env.ISSUE_CONTENT;
 
-          **Issue ID:** \`${{ steps.parse.outputs.issue_id }}\`
-          **Message:** ${{ steps.parse.outputs.message }}
-          **File:** \`${{ steps.parse.outputs.file }}\`
-          **Line:** ${{ steps.parse.outputs.line }}
+          const body = `## Android Lint Issue
+
+          **Issue ID:** \`${issueId}\`
+          **Message:** ${message}
+          **File:** \`${file}\`
+          **Line:** ${line}
 
           ### 詳細 (XML)
           \`\`\`xml
-          ${{ steps.parse.outputs.issue_content }}
+          ${content}
           \`\`\`
 
           ---
           *This issue was automatically created by Android Lint Auto Fix workflow.*
-          `,
+          `;
+
+          const issue = await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `[Lint] ${issueId}`,
+            body: body,
             labels: ['lint', 'automated']
           });
           core.setOutput('issue_number', issue.data.number);

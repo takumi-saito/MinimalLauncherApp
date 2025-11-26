@@ -26,13 +26,31 @@ jobs:
       run: |
         REPORT=app/build/reports/lint-results-debug.xml
 
+        # Issue ID を抽出（最初の Error または Warning）
         ISSUE_ID=$(xmllint --xpath \
-          "(//issue[@severity='Error'] | //issue[@severity='Warning'])[1]/@id" \
-          $REPORT | sed 's/ id=\"\([^\"]*\)\"/\1/')
+          "string((//issue[@severity='Error'] | //issue[@severity='Warning'])[1]/@id)" \
+          $REPORT 2>/dev/null || echo "")
+
+        if [ -z "$ISSUE_ID" ]; then
+          echo "No Lint issues found."
+          echo "has_issue=false" >> $GITHUB_OUTPUT
+          exit 0
+        fi
 
         echo "Found Lint Issue: $ISSUE_ID"
         echo "issue_id=$ISSUE_ID" >> $GITHUB_OUTPUT
         echo "issue_file=$REPORT" >> $GITHUB_OUTPUT
+        echo "has_issue=true" >> $GITHUB_OUTPUT
+
+        # 該当 Issue の詳細を抽出して保存
+        xmllint --xpath "(//issue[@id='$ISSUE_ID'])[1]" $REPORT > /tmp/issue_detail.xml 2>/dev/null || true
+
+        # Issue の内容を出力用に整形
+        {
+          echo "issue_content<<EOF"
+          cat /tmp/issue_detail.xml
+          echo "EOF"
+        } >> $GITHUB_OUTPUT
 
     - name: Upload Lint Report
       uses: actions/upload-artifact@v4
@@ -41,6 +59,7 @@ jobs:
         path: ${{ steps.parse.outputs.issue_file }}
 
     - name: Claude Code Auto Fix
+      if: steps.parse.outputs.has_issue == 'true'
       uses: anthropics/claude-code-action@v1
       with:
         claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -49,18 +68,20 @@ jobs:
         pull_request_title: "chore(lint): Fix ${{ steps.parse.outputs.issue_id }}"
         pull_request_branch: "auto/lint-${{ steps.parse.outputs.issue_id }}"
         prompt: |
-          以下は Android Lint のレポートです。
-          抽出された Issue ID は **${{ steps.parse.outputs.issue_id }}** です。
-          この Issue に該当する部分 **1件のみ** を修正する最小限の diff を生成してください。
-          
-          ■ 必須ルール
-          - 修正は 1 件だけ（複数対応は禁止）
+          Android Lint で検出された Issue を **1件だけ** 修正してください。
+
+          ## 修正対象
+          - Issue ID: **${{ steps.parse.outputs.issue_id }}**
+
+          ## Issue の詳細 (XML)
+          ```xml
+          ${{ steps.parse.outputs.issue_content }}
+          ```
+
+          ## 必須ルール
+          - 上記の Issue **1件のみ** を修正すること
           - PR の diff は最小限にし、不要なリファクタは行わない
           - コードスタイルは既存に合わせる
-          - 自動修正可能な Lint なら auto-fix ベースで良い
           - 他の Issue は絶対に触れないこと
-          
-          以下がレポート XML です：
-          ```xml
-          ${{ steps.parse.outputs.issue_file }}
-          ```
+
+          XML 内の location 要素に記載されたファイルパスと行番号を参照して修正してください。

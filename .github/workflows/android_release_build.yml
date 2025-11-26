@@ -9,7 +9,7 @@ on:
       - develop
 
 jobs:
-  build:
+  release-build:
 
     runs-on: ubuntu-latest
 
@@ -21,7 +21,7 @@ jobs:
       uses: actions/setup-java@v4
       with:
         distribution: temurin
-        java-version: '21'
+        java-version: '17'
 
     - name: Restore Gradle cache
       uses: gradle/actions/setup-gradle@v4
@@ -39,8 +39,8 @@ jobs:
 
     - name: Restore keystore.jks
       run: |
-        echo "${{ secrets.RELEASE_JKS_BASE64 }}" | base64 -d > release.jks
-        ls -l release.jks
+        echo "${{ secrets.RELEASE_JKS_BASE64 }}" | base64 -d > app/release.jks
+        ls -l app/release.jks
 
     - name: Restore keystore.properties
       run: |

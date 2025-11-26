@@ -29,12 +29,10 @@ jobs:
       run: |
         REPORT=app/build/reports/lint-results-debug.xml
 
-        # Issue ID を抽出（最初の Error または Warning）
         ISSUE_ID=$(xmllint --xpath \
           "string((//issue[@severity='Error'] | //issue[@severity='Warning'])[1]/@id)" \
           $REPORT 2>/dev/null || echo "")
 
-        # レポートファイルパスは常に出力
         echo "issue_file=$REPORT" >> $GITHUB_OUTPUT
 
         if [ -z "$ISSUE_ID" ]; then
@@ -47,13 +45,21 @@ jobs:
         echo "issue_id=$ISSUE_ID" >> $GITHUB_OUTPUT
         echo "has_issue=true" >> $GITHUB_OUTPUT
 
-        # 該当 Issue の詳細を抽出して保存
-        xmllint --xpath "(//issue[@id='$ISSUE_ID'])[1]" $REPORT > /tmp/issue_detail.xml 2>/dev/null || true
+        # Issue の詳細を抽出
+        ISSUE_XML=$(xmllint --xpath "(//issue[@id='$ISSUE_ID'])[1]" $REPORT 2>/dev/null || echo "")
 
-        # Issue の内容を出力用に整形
+        # message と location を抽出
+        MESSAGE=$(echo "$ISSUE_XML" | xmllint --xpath "string(//issue/@message)" - 2>/dev/null || echo "")
+        FILE=$(echo "$ISSUE_XML" | xmllint --xpath "string(//location/@file)" - 2>/dev/null || echo "")
+        LINE=$(echo "$ISSUE_XML" | xmllint --xpath "string(//location/@line)" - 2>/dev/null || echo "")
+
+        echo "message=$MESSAGE" >> $GITHUB_OUTPUT
+        echo "file=$FILE" >> $GITHUB_OUTPUT
+        echo "line=$LINE" >> $GITHUB_OUTPUT
+
         {
           echo "issue_content<<EOF"
-          cat /tmp/issue_detail.xml
+          echo "$ISSUE_XML"
           echo "EOF"
         } >> $GITHUB_OUTPUT
 
@@ -63,20 +69,48 @@ jobs:
         name: lint-report
         path: ${{ steps.parse.outputs.issue_file }}
 
+    - name: Create GitHub Issue
+      id: create_issue
+      if: steps.parse.outputs.has_issue == 'true'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const issue = await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `[Lint] ${{ steps.parse.outputs.issue_id }}`,
+            body: `## Android Lint Issue
+
+          **Issue ID:** \`${{ steps.parse.outputs.issue_id }}\`
+          **Message:** ${{ steps.parse.outputs.message }}
+          **File:** \`${{ steps.parse.outputs.file }}\`
+          **Line:** ${{ steps.parse.outputs.line }}
+
+          ### 詳細 (XML)
+          \`\`\`xml
+          ${{ steps.parse.outputs.issue_content }}
+          \`\`\`
+
+          ---
+          *This issue was automatically created by Android Lint Auto Fix workflow.*
+          `,
+            labels: ['lint', 'automated']
+          });
+          core.setOutput('issue_number', issue.data.number);
+          console.log(`Created issue #${issue.data.number}`);
+
     - name: Claude Code Auto Fix
       if: steps.parse.outputs.has_issue == 'true'
       uses: anthropics/claude-code-action@v1
       with:
         claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        commit_style: "always_pr"
-        pull_request_title: "chore(lint): Fix ${{ steps.parse.outputs.issue_id }}"
-        pull_request_branch: "auto/lint-${{ steps.parse.outputs.issue_id }}"
-        prompt: |
+        direct_prompt: |
           Android Lint で検出された Issue を **1件だけ** 修正してください。
 
           ## 修正対象
           - Issue ID: **${{ steps.parse.outputs.issue_id }}**
+          - GitHub Issue: #${{ steps.create_issue.outputs.issue_number }}
 
           ## Issue の詳細 (XML)
           ```xml
@@ -85,8 +119,10 @@ jobs:
 
           ## 必須ルール
           - 上記の Issue **1件のみ** を修正すること
+          - 修正後、以下のブランチ名で commit & push してください:
+            `auto/lint-${{ steps.create_issue.outputs.issue_number }}-${{ steps.parse.outputs.issue_id }}`
+          - commit メッセージに `Closes #${{ steps.create_issue.outputs.issue_number }}` を含めてください
           - PR の diff は最小限にし、不要なリファクタは行わない
           - コードスタイルは既存に合わせる
-          - 他の Issue は絶対に触れないこと
 
           XML 内の location 要素に記載されたファイルパスと行番号を参照して修正してください。

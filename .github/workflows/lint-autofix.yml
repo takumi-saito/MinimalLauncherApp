@@ -1,0 +1,66 @@
+name: Android Lint Auto Fix (Claude Code)
+
+on:
+  schedule:
+    - cron: "0 17 * * *"   # JST 02:00 実行
+  workflow_dispatch:
+
+jobs:
+  lint-autofix:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Android Build Environment
+      uses: ./.github/actions/setup-android-build
+      with:
+        google-services-json-base64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+
+    - name: Run Android Lint
+      run: ./gradlew lintDebug
+
+    - name: Parse Lint XML
+      id: parse
+      run: |
+        REPORT=app/build/reports/lint-results-debug.xml
+
+        ISSUE_ID=$(xmllint --xpath \
+          "(//issue[@severity='Error'] | //issue[@severity='Warning'])[1]/@id" \
+          $REPORT | sed 's/ id=\"\([^\"]*\)\"/\1/')
+
+        echo "Found Lint Issue: $ISSUE_ID"
+        echo "issue_id=$ISSUE_ID" >> $GITHUB_OUTPUT
+        echo "issue_file=$REPORT" >> $GITHUB_OUTPUT
+
+    - name: Upload Lint Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: lint-report
+        path: ${{ steps.parse.outputs.issue_file }}
+
+    - name: Claude Code Auto Fix
+      uses: anthropic/claude-code-action@v1
+      with:
+        claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        commit_style: "always_pr"
+        pull_request_title: "chore(lint): Fix ${{ steps.parse.outputs.issue_id }}"
+        pull_request_branch: "auto/lint-${{ steps.parse.outputs.issue_id }}"
+        prompt: |
+          以下は Android Lint のレポートです。
+          抽出された Issue ID は **${{ steps.parse.outputs.issue_id }}** です。
+          この Issue に該当する部分 **1件のみ** を修正する最小限の diff を生成してください。
+          
+          ■ 必須ルール
+          - 修正は 1 件だけ（複数対応は禁止）
+          - PR の diff は最小限にし、不要なリファクタは行わない
+          - コードスタイルは既存に合わせる
+          - 自動修正可能な Lint なら auto-fix ベースで良い
+          - 他の Issue は絶対に触れないこと
+          
+          以下がレポート XML です：
+          ```xml
+          ${{ steps.parse.outputs.issue_file }}
+          ```

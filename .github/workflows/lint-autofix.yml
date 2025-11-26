@@ -122,6 +122,6 @@ jobs:
             owner: context.repo.owner,
             repo: context.repo.repo,
             issue_number: ${{ steps.create_issue.outputs.issue_number }},
-            body: '@claude issueを参照し実装してください'
+            body: '@claude_dev issueを参照し実装してください'
           });
           console.log(`Added comment to issue #${{ steps.create_issue.outputs.issue_number }}`);

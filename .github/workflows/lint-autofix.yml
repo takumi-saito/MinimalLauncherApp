@@ -26,10 +26,27 @@ jobs:
       run: |
         REPORT=app/build/reports/lint-results-debug.xml
 
+        # デバッグ: レポートファイルの存在確認
+        echo "=== Debug: Checking report file ==="
+        ls -la $REPORT || echo "Report file not found!"
+
+        # デバッグ: Issue 数を確認
+        echo "=== Debug: Issue counts ==="
+        echo "Total issues: $(xmllint --xpath 'count(//issue)' $REPORT 2>/dev/null || echo 'N/A')"
+        echo "Error issues: $(xmllint --xpath 'count(//issue[@severity=\"Error\"])' $REPORT 2>/dev/null || echo 'N/A')"
+        echo "Warning issues: $(xmllint --xpath 'count(//issue[@severity=\"Warning\"])' $REPORT 2>/dev/null || echo 'N/A')"
+
+        # デバッグ: 最初の Issue を表示
+        echo "=== Debug: First issue preview ==="
+        xmllint --xpath '(//issue)[1]/@id' $REPORT 2>/dev/null || echo "No issues found"
+
         # Issue ID を抽出（最初の Error または Warning）
         ISSUE_ID=$(xmllint --xpath \
           "string((//issue[@severity='Error'] | //issue[@severity='Warning'])[1]/@id)" \
           $REPORT 2>/dev/null || echo "")
+
+        # レポートファイルパスは常に出力
+        echo "issue_file=$REPORT" >> $GITHUB_OUTPUT
 
         if [ -z "$ISSUE_ID" ]; then
           echo "No Lint issues found."
@@ -39,7 +56,6 @@ jobs:
 
         echo "Found Lint Issue: $ISSUE_ID"
         echo "issue_id=$ISSUE_ID" >> $GITHUB_OUTPUT
-        echo "issue_file=$REPORT" >> $GITHUB_OUTPUT
         echo "has_issue=true" >> $GITHUB_OUTPUT
 
         # 該当 Issue の詳細を抽出して保存

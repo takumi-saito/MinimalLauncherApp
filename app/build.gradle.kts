@@ -12,7 +12,7 @@ val keystoreProperties = Properties().apply {
 plugins {
     id("com.android.application")
     id("kotlin-android")
-    id("kotlin-kapt")
+    id("com.google.devtools.ksp")
     id("com.google.gms.google-services")
     id("com.google.firebase.crashlytics")
     id("com.google.firebase.firebase-perf")
@@ -67,7 +67,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.4.5"
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
 }
 
@@ -99,8 +99,8 @@ dependencies {
     implementation ("androidx.legacy:legacy-support-v4:1.0.0")
     implementation ("androidx.viewpager2:viewpager2:1.0.0")
     // Hilt
-    implementation ("com.google.dagger:hilt-android:2.44")
-    kapt ("com.google.dagger:hilt-compiler:2.44")
+    implementation("com.google.dagger:hilt-android:2.51.1")
+    ksp("com.google.dagger:hilt-compiler:2.51.1")
 
     implementation (platform("com.google.firebase:firebase-bom:31.2.2"))
     implementation ("com.google.firebase:firebase-analytics")
@@ -115,10 +115,6 @@ dependencies {
     androidTestImplementation ("androidx.test.espresso:espresso-core:3.2.0")
 }
 
-// Allow references to generated code
-kapt {
-    correctErrorTypes = true
-}
 
 jacoco {
     toolVersion = "0.8.8"

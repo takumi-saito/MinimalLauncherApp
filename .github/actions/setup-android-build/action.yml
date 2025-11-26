@@ -1,0 +1,64 @@
+# ==============================================================================
+# Setup Android Build Environment
+# ==============================================================================
+#
+# 概要:
+#   Android アプリのビルドに必要な環境をセットアップする共通アクション。
+#   Debug/Release 両方のビルドで利用される基盤となるアクション。
+#
+# 利用元:
+#   - .github/workflows/android-debug-build.yml (直接利用)
+#   - .github/actions/build-release-aab/action.yml (Release ビルドから利用)
+#
+# 処理内容:
+#   1. JDK 17 (Temurin) のセットアップ
+#   2. Gradle キャッシュの復元 (ビルド高速化)
+#   3. google-services.json のデコード・配置 (Firebase 設定)
+#   4. gradlew への実行権限付与
+#
+# 必要な GitHub Secrets:
+#   - GOOGLE_SERVICES_JSON_BASE64: google-services.json を Base64 エンコードした値
+#     (Firebase を使用しない場合は省略可)
+#
+# ==============================================================================
+
+name: 'Setup Android Build Environment'
+description: 'Android ビルド環境をセットアップする共通アクション'
+
+inputs:
+  google-services-json-base64:
+    description: 'Base64 encoded google-services.json'
+    required: false
+
+runs:
+  using: 'composite'
+  steps:
+    # JDK セットアップ
+    # - distribution: temurin (Eclipse Adoptium)
+    # - version: 17 (プロジェクトの sourceCompatibility/targetCompatibility に合わせる)
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    # Gradle キャッシュの復元
+    # - 依存関係のダウンロード時間を短縮
+    # - ~/.gradle/caches と ~/.gradle/wrapper をキャッシュ
+    - name: Restore Gradle cache
+      uses: gradle/actions/setup-gradle@v4
+
+    # Firebase 設定ファイルの配置
+    # - Base64 デコードして app/google-services.json に配置
+    # - 入力が空の場合はスキップ
+    - name: Decode and save google-services.json
+      if: ${{ inputs.google-services-json-base64 != '' }}
+      shell: bash
+      run: |
+        echo "${{ inputs.google-services-json-base64 }}" | base64 -d > app/google-services.json
+        echo "google-services.json has been created successfully"
+
+    # Gradle Wrapper に実行権限を付与
+    - name: Grant execute permission for gradlew
+      shell: bash
+      run: chmod +x ./gradlew

@@ -1,0 +1,90 @@
+# ==============================================================================
+# Build Release AAB
+# ==============================================================================
+#
+# 概要:
+#   署名済みの Release 用 AAB (Android App Bundle) をビルドするアクション。
+#   setup-android-build を内部で利用し、署名に必要な keystore を追加設定する。
+#
+# 利用元:
+#   - .github/workflows/android-release-build.yml
+#   - .github/workflows/deploy-google-play-console.yml
+#
+# 依存関係:
+#   - .github/actions/setup-android-build (環境セットアップ)
+#
+# 処理内容:
+#   1. Android ビルド環境のセットアップ (setup-android-build を呼び出し)
+#   2. release.jks (署名用 keystore) のデコード・配置
+#   3. keystore.properties の作成 (署名設定)
+#   4. Release AAB のビルド (./gradlew bundleRelease)
+#   5. AAB ファイルを artifact としてアップロード
+#
+# 必要な GitHub Secrets:
+#   - GOOGLE_SERVICES_JSON_BASE64: google-services.json を Base64 エンコードした値
+#   - RELEASE_JKS_BASE64: release.jks を Base64 エンコードした値
+#   - KEYSTORE_PROPERTIES: keystore.properties の内容
+#     (storePassword, keyPassword, keyAlias, storeFile を含む)
+#
+# 出力:
+#   - artifact 名: app-release-aab
+#   - ファイル: app/build/outputs/bundle/release/*.aab
+#
+# ==============================================================================
+
+name: 'Build Release AAB'
+description: 'Android リリース用 AAB をビルドする共通アクション'
+
+inputs:
+  google-services-json-base64:
+    description: 'Base64 encoded google-services.json'
+    required: false
+  release-jks-base64:
+    description: 'Base64 encoded release.jks'
+    required: true
+  keystore-properties:
+    description: 'Content of keystore.properties'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    # 共通環境セットアップを呼び出し
+    # - JDK, Gradle cache, google-services.json, gradlew 権限
+    - name: Setup Android Build Environment
+      uses: ./.github/actions/setup-android-build
+      with:
+        google-services-json-base64: ${{ inputs.google-services-json-base64 }}
+
+    # 署名用 keystore の配置
+    # - Base64 デコードして app/release.jks に配置
+    # - build.gradle.kts の signingConfigs で参照される
+    - name: Restore keystore.jks
+      shell: bash
+      run: |
+        echo "${{ inputs.release-jks-base64 }}" | base64 -d > app/release.jks
+        ls -l app/release.jks
+
+    # keystore.properties の作成
+    # - プロジェクトルートに配置
+    # - build.gradle.kts で rootProject.file("keystore.properties") として参照される
+    # - 含まれる項目: storePassword, keyPassword, keyAlias, storeFile
+    - name: Restore keystore.properties
+      shell: bash
+      run: echo "${{ inputs.keystore-properties }}" > keystore.properties
+
+    # Release AAB のビルド
+    # - bundleRelease: AAB 形式で出力 (Google Play 提出用)
+    # - --stacktrace: エラー時の詳細ログ出力
+    # - --no-daemon: CI 環境向けにデーモン無効化
+    - name: Build AAB
+      shell: bash
+      run: ./gradlew bundleRelease --stacktrace --no-daemon
+
+    # AAB を artifact としてアップロード
+    # - 後続の deploy ジョブや手動ダウンロードで利用可能
+    - name: Upload AAB artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: app-release-aab
+        path: app/build/outputs/bundle/release/*.aab

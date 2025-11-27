@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <!-- 
+        Android 12以降でのデータ抽出ルール設定
+        現在のポリシー: バックアップを無効化
+    -->
+    <cloud-backup>
+        <!-- クラウドバックアップを無効化 -->
+        <exclude domain="root" />
+        <exclude domain="database" />
+        <exclude domain="sharedpref" />
+        <exclude domain="external" />
+        <exclude domain="file" />
+    </cloud-backup>
+    
+    <device-transfer>
+        <!-- デバイス間転送を無効化 -->
+        <exclude domain="root" />
+        <exclude domain="database" />
+        <exclude domain="sharedpref" />
+        <exclude domain="external" />
+        <exclude domain="file" />
+    </device-transfer>
+</data-extraction-rules>

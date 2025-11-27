@@ -43,7 +43,8 @@ jobs:
           # anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           # Or use OAuth token instead:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # PAT を使用して takumi-saito としてコメント
+          github_token: ${{ secrets.PAT_GITHUB_TOKEN }}
           allowed_tools: "Bash(./gradlew:*),Bash(gradlew:*),Bash(git:*),Read(**),Write(**),Edit(**),MultiEdit(**),Grep(**),Glob(**),LS(**)"
           # Optional: set execution mode (default: tag)
           mode: "tag"

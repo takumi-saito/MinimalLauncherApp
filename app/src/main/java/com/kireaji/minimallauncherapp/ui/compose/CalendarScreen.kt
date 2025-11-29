@@ -26,6 +26,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.kireaji.minimallauncherapp.R
 import com.kireaji.minimallauncherapp.data.model.CalendarCell
 import com.kireaji.minimallauncherapp.data.model.CalendarUiState
@@ -100,7 +101,8 @@ fun CalendarCellItem(cell: CalendarCell) {
                     text = cell.month,
                     color = colorResource(id = R.color.base_text),
                     fontFamily = FontFamily.SansSerif,
-                    fontWeight = FontWeight.Light
+                    fontWeight = FontWeight.Light,
+                    fontSize = 12.sp
                 )
             }
             is CalendarCell.DayOfWeekHeader -> {
@@ -108,7 +110,8 @@ fun CalendarCellItem(cell: CalendarCell) {
                     text = cell.dayOfWeek.toString().substring(0, 3),
                     color = getDayOfWeekColor(cell.dayOfWeek),
                     fontFamily = FontFamily.SansSerif,
-                    fontWeight = FontWeight.Light
+                    fontWeight = FontWeight.Light,
+                    fontSize = 12.sp
                 )
             }
             is CalendarCell.DateCell -> {

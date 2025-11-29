@@ -78,7 +78,7 @@ Pull Request のコードレビュー、品質チェック、技術相談を行�
 - Jetpack Compose ベストプラクティス
 - Hilt DI の適切な使用
 - メモリ効率とパフォーマンス
-- Android SDK 互換性（API 26-33）
+- Android SDK 互換性（API 26-36）
 
 #### 使用例
 ```markdown
@@ -145,11 +145,11 @@ MinimalLauncherApp は、シンプルで使いやすい Android ランチャー�
 
 ### 技術スタック
 - **言語**: Kotlin
-- **UI**: Jetpack Compose (移行中) + 従来の View システム
+- **UI**: Jetpack Compose + 従来の View システム（ViewPager2）
 - **アーキテクチャ**: MVVM
 - **DI**: Hilt
 - **最小 SDK**: 26 (Android 8.0)
-- **ターゲット SDK**: 33 (Android 13)
+- **ターゲット SDK**: 36 (Android 15)
 
 ### ビルド方法
 ```bash

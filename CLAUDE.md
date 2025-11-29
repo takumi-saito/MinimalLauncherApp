@@ -66,18 +66,18 @@ app/src/main/java/com/kireaji/minimallauncherapp/
 
 ### 主要コンポーネント
 
-- **FullscreenActivity**: メインアクティビティ。ViewPager でカレンダーとアプリリストを切り替え
-- **AppListFragment/AppListScreen**: インストール済みアプリ一覧表示（Compose 移行中）
-- **CalenderFragment**: カレンダー表示
+- **FullscreenActivity**: メインアクティビティ。ViewPager2 でカレンダーとアプリリストを切り替え
+- **AppListFragment/AppListScreen**: インストール済みアプリ一覧表示（Compose）。インデックスバーによる高速ナビゲーション対応
+- **CalendarFragment/CalendarScreen**: カレンダー表示（Compose）
 - **AppUseCase**: アプリケーション情報の取得・管理ロジック
 - **Hilt DI**: `@HiltAndroidApp`、`@AndroidEntryPoint`、`@Module` によるモジュール構成
 
 ### 技術スタック
 
-- **UI**: Jetpack Compose + 従来の View システム（移行中）
+- **UI**: Jetpack Compose + 従来の View システム（ViewPager2）
 - **DI**: Hilt 2.44
 - **ビルドツール**: Gradle 8.10.1、Kotlin 1.8.20
-- **最小 SDK**: 26 / ターゲット SDK: 35 (Android 15)
+- **最小 SDK**: 26 / ターゲット SDK: 36
 - **Java バージョン**: 17
 - **テスト**: JUnit 4.13.2、Mockito 3.12.4
 - **Firebase**: Analytics、Crashlytics、Performance Monitoring

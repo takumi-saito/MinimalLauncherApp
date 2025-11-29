@@ -16,8 +16,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -53,7 +51,7 @@ private fun todayBackgroundColor(): Color {
 @Composable
 fun CalendarScreen(viewModel: CalendarViewModel) {
     val uiState = viewModel.uiState.collectAsState()
-    CalendarTheme {
+    AppTheme {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
@@ -66,29 +64,6 @@ fun CalendarScreen(viewModel: CalendarViewModel) {
             }
         }
     }
-}
-
-@Composable
-private fun CalendarTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
-) {
-    val colorScheme = if (darkTheme) {
-        darkColorScheme(
-            background = Color.Black,
-            surface = Color.Black
-        )
-    } else {
-        lightColorScheme(
-            background = Color.White,
-            surface = Color.White
-        )
-    }
-
-    MaterialTheme(
-        colorScheme = colorScheme,
-        content = content
-    )
 }
 
 @Composable
@@ -243,7 +218,7 @@ private fun createSampleCells() = listOf(
 )
 @Composable
 fun CalendarGridPreviewDark() {
-    CalendarTheme(darkTheme = true) {
+    AppTheme(darkTheme = true) {
         Surface(color = MaterialTheme.colorScheme.background) {
             CalendarGrid(uiState = CalendarUiState(cells = createSampleCells()))
         }
@@ -257,7 +232,7 @@ fun CalendarGridPreviewDark() {
 )
 @Composable
 fun CalendarGridPreviewLight() {
-    CalendarTheme(darkTheme = false) {
+    AppTheme(darkTheme = false) {
         Surface(color = MaterialTheme.colorScheme.background) {
             CalendarGrid(uiState = CalendarUiState(cells = createSampleCells()))
         }

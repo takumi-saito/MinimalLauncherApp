@@ -28,8 +28,8 @@ android {
         applicationId = "com.kireaji.minimallauncherapp"
         minSdk = 26
         targetSdk = 36
-        versionCode = 133
-        versionName = "1.3.3"
+        versionCode = 140
+        versionName = "1.4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

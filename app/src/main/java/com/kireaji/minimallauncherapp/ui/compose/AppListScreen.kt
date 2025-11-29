@@ -253,10 +253,14 @@ private fun AppListWithIndexBar(
                     selectedCharacter = char
                     charToPositionMap[char]?.let { position ->
                         coroutineScope.launch {
+                            // ビューポート中央にアイテムを配置するためのオフセット計算
+                            val viewportHeight = listState.layoutInfo.viewportSize.height
+                            val centerOffset = (-viewportHeight / 2.2f).toInt()
+
                             if (isDragging) {
-                                listState.scrollToItem(position)  // 即時スクロール
+                                listState.scrollToItem(position, scrollOffset = centerOffset)
                             } else {
-                                listState.animateScrollToItem(position)  // アニメーション
+                                listState.animateScrollToItem(position, scrollOffset = centerOffset)
                             }
                         }
                     }

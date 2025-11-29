@@ -2,6 +2,7 @@ package com.kireaji.minimallauncherapp.ui.compose
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -32,7 +33,12 @@ private object CalendarColors {
 @Composable
 fun CalendarScreen(viewModel: CalendarViewModel) {
     val uiState = viewModel.uiState.collectAsState()
-    CalendarGrid(uiState = uiState.value)
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        CalendarGrid(uiState = uiState.value)
+    }
 }
 
 @Composable

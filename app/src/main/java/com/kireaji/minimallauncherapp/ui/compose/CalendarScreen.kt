@@ -1,6 +1,8 @@
 package com.kireaji.minimallauncherapp.ui.compose
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,7 +13,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
@@ -31,18 +37,58 @@ import java.time.DayOfWeek
 private object CalendarColors {
     val Saturday = Color(0xFF558FA7)  // MINIMAL_BLUE
     val Sunday = Color(0xFFF28C8F)    // MINIMAL_RED
-    val TodayBackground = Color.White.copy(alpha = 0.15f)
+    val TodayBackgroundDark = Color.White.copy(alpha = 0.2f)
+    val TodayBackgroundLight = Color.Black.copy(alpha = 0.1f)
+}
+
+@Composable
+private fun todayBackgroundColor(): Color {
+    return if (isSystemInDarkTheme()) {
+        CalendarColors.TodayBackgroundDark
+    } else {
+        CalendarColors.TodayBackgroundLight
+    }
 }
 
 @Composable
 fun CalendarScreen(viewModel: CalendarViewModel) {
     val uiState = viewModel.uiState.collectAsState()
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        CalendarGrid(uiState = uiState.value)
+    CalendarTheme {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CalendarGrid(uiState = uiState.value)
+            }
+        }
     }
+}
+
+@Composable
+private fun CalendarTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable () -> Unit
+) {
+    val colorScheme = if (darkTheme) {
+        darkColorScheme(
+            background = Color.Black,
+            surface = Color.Black
+        )
+    } else {
+        lightColorScheme(
+            background = Color.White,
+            surface = Color.White
+        )
+    }
+
+    MaterialTheme(
+        colorScheme = colorScheme,
+        content = content
+    )
 }
 
 @Composable
@@ -63,7 +109,7 @@ fun CalendarCellItem(cell: CalendarCell) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp, horizontal = 8.dp),
-        contentAlignment = Alignment.CenterEnd
+        contentAlignment = Alignment.Center
     ) {
         when (cell) {
             is CalendarCell.YearHeader -> {
@@ -91,13 +137,14 @@ fun CalendarCellItem(cell: CalendarCell) {
                 )
             }
             is CalendarCell.DateCell -> {
+                val backgroundColor = todayBackgroundColor()
                 Box(
                     modifier = Modifier
                         .size(28.dp)
                         .then(
                             if (cell.isToday) {
                                 Modifier.background(
-                                    color = CalendarColors.TodayBackground,
+                                    color = backgroundColor,
                                     shape = CircleShape
                                 )
                             } else {
@@ -130,66 +177,89 @@ private fun getDayOfWeekColor(dayOfWeek: DayOfWeek): Color {
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF000000)
+private fun createSampleCells() = listOf(
+    // Month header row
+    CalendarCell.MonthHeader("DEC"),
+    CalendarCell.Empty,
+    CalendarCell.Empty,
+    CalendarCell.Empty,
+    CalendarCell.Empty,
+    CalendarCell.Empty,
+    CalendarCell.Empty,
+    // Day of week header row
+    CalendarCell.DayOfWeekHeader(DayOfWeek.SUNDAY),
+    CalendarCell.DayOfWeekHeader(DayOfWeek.MONDAY),
+    CalendarCell.DayOfWeekHeader(DayOfWeek.TUESDAY),
+    CalendarCell.DayOfWeekHeader(DayOfWeek.WEDNESDAY),
+    CalendarCell.DayOfWeekHeader(DayOfWeek.THURSDAY),
+    CalendarCell.DayOfWeekHeader(DayOfWeek.FRIDAY),
+    CalendarCell.DayOfWeekHeader(DayOfWeek.SATURDAY),
+    // Week 1: 1(Sun) - 7(Sat)
+    CalendarCell.DateCell(1, DayOfWeek.SUNDAY),
+    CalendarCell.DateCell(2, DayOfWeek.MONDAY),
+    CalendarCell.DateCell(3, DayOfWeek.TUESDAY),
+    CalendarCell.DateCell(4, DayOfWeek.WEDNESDAY),
+    CalendarCell.DateCell(5, DayOfWeek.THURSDAY),
+    CalendarCell.DateCell(6, DayOfWeek.FRIDAY),
+    CalendarCell.DateCell(7, DayOfWeek.SATURDAY),
+    // Week 2: 8(Sun) - 14(Sat)
+    CalendarCell.DateCell(8, DayOfWeek.SUNDAY),
+    CalendarCell.DateCell(9, DayOfWeek.MONDAY),
+    CalendarCell.DateCell(10, DayOfWeek.TUESDAY),
+    CalendarCell.DateCell(11, DayOfWeek.WEDNESDAY),
+    CalendarCell.DateCell(12, DayOfWeek.THURSDAY),
+    CalendarCell.DateCell(13, DayOfWeek.FRIDAY),
+    CalendarCell.DateCell(14, DayOfWeek.SATURDAY),
+    // Week 3: 15(Sun) - 21(Sat)
+    CalendarCell.DateCell(15, DayOfWeek.SUNDAY, isToday = true),
+    CalendarCell.DateCell(16, DayOfWeek.MONDAY),
+    CalendarCell.DateCell(17, DayOfWeek.TUESDAY),
+    CalendarCell.DateCell(18, DayOfWeek.WEDNESDAY),
+    CalendarCell.DateCell(19, DayOfWeek.THURSDAY),
+    CalendarCell.DateCell(20, DayOfWeek.FRIDAY),
+    CalendarCell.DateCell(21, DayOfWeek.SATURDAY),
+    // Week 4: 22(Sun) - 28(Sat)
+    CalendarCell.DateCell(22, DayOfWeek.SUNDAY),
+    CalendarCell.DateCell(23, DayOfWeek.MONDAY),
+    CalendarCell.DateCell(24, DayOfWeek.TUESDAY),
+    CalendarCell.DateCell(25, DayOfWeek.WEDNESDAY),
+    CalendarCell.DateCell(26, DayOfWeek.THURSDAY),
+    CalendarCell.DateCell(27, DayOfWeek.FRIDAY),
+    CalendarCell.DateCell(28, DayOfWeek.SATURDAY),
+    // Week 5: 29(Sun) - 31(Tue)
+    CalendarCell.DateCell(29, DayOfWeek.SUNDAY),
+    CalendarCell.DateCell(30, DayOfWeek.MONDAY),
+    CalendarCell.DateCell(31, DayOfWeek.TUESDAY),
+    CalendarCell.Empty,
+    CalendarCell.Empty,
+    CalendarCell.Empty,
+    CalendarCell.Empty
+)
+
+@Preview(
+    name = "Dark Mode",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
-fun CalendarGridPreview() {
-    val sampleCells = listOf(
-        // Month header row
-        CalendarCell.MonthHeader("DEC"),
-        CalendarCell.Empty,
-        CalendarCell.Empty,
-        CalendarCell.Empty,
-        CalendarCell.Empty,
-        CalendarCell.Empty,
-        CalendarCell.Empty,
-        // Day of week header row
-        CalendarCell.DayOfWeekHeader(DayOfWeek.SUNDAY),
-        CalendarCell.DayOfWeekHeader(DayOfWeek.MONDAY),
-        CalendarCell.DayOfWeekHeader(DayOfWeek.TUESDAY),
-        CalendarCell.DayOfWeekHeader(DayOfWeek.WEDNESDAY),
-        CalendarCell.DayOfWeekHeader(DayOfWeek.THURSDAY),
-        CalendarCell.DayOfWeekHeader(DayOfWeek.FRIDAY),
-        CalendarCell.DayOfWeekHeader(DayOfWeek.SATURDAY),
-        // Week 1: 1(Sun) - 7(Sat)
-        CalendarCell.DateCell(1, DayOfWeek.SUNDAY),
-        CalendarCell.DateCell(2, DayOfWeek.MONDAY),
-        CalendarCell.DateCell(3, DayOfWeek.TUESDAY),
-        CalendarCell.DateCell(4, DayOfWeek.WEDNESDAY),
-        CalendarCell.DateCell(5, DayOfWeek.THURSDAY),
-        CalendarCell.DateCell(6, DayOfWeek.FRIDAY),
-        CalendarCell.DateCell(7, DayOfWeek.SATURDAY),
-        // Week 2: 8(Sun) - 14(Sat)
-        CalendarCell.DateCell(8, DayOfWeek.SUNDAY),
-        CalendarCell.DateCell(9, DayOfWeek.MONDAY),
-        CalendarCell.DateCell(10, DayOfWeek.TUESDAY),
-        CalendarCell.DateCell(11, DayOfWeek.WEDNESDAY),
-        CalendarCell.DateCell(12, DayOfWeek.THURSDAY),
-        CalendarCell.DateCell(13, DayOfWeek.FRIDAY),
-        CalendarCell.DateCell(14, DayOfWeek.SATURDAY),
-        // Week 3: 15(Sun) - 21(Sat)
-        CalendarCell.DateCell(15, DayOfWeek.SUNDAY, isToday = true),
-        CalendarCell.DateCell(16, DayOfWeek.MONDAY),
-        CalendarCell.DateCell(17, DayOfWeek.TUESDAY),
-        CalendarCell.DateCell(18, DayOfWeek.WEDNESDAY),
-        CalendarCell.DateCell(19, DayOfWeek.THURSDAY),
-        CalendarCell.DateCell(20, DayOfWeek.FRIDAY),
-        CalendarCell.DateCell(21, DayOfWeek.SATURDAY),
-        // Week 4: 22(Sun) - 28(Sat)
-        CalendarCell.DateCell(22, DayOfWeek.SUNDAY),
-        CalendarCell.DateCell(23, DayOfWeek.MONDAY),
-        CalendarCell.DateCell(24, DayOfWeek.TUESDAY),
-        CalendarCell.DateCell(25, DayOfWeek.WEDNESDAY),
-        CalendarCell.DateCell(26, DayOfWeek.THURSDAY),
-        CalendarCell.DateCell(27, DayOfWeek.FRIDAY),
-        CalendarCell.DateCell(28, DayOfWeek.SATURDAY),
-        // Week 5: 29(Sun) - 31(Tue)
-        CalendarCell.DateCell(29, DayOfWeek.SUNDAY),
-        CalendarCell.DateCell(30, DayOfWeek.MONDAY),
-        CalendarCell.DateCell(31, DayOfWeek.TUESDAY),
-        CalendarCell.Empty,
-        CalendarCell.Empty,
-        CalendarCell.Empty,
-        CalendarCell.Empty
-    )
-    CalendarGrid(uiState = CalendarUiState(cells = sampleCells))
+fun CalendarGridPreviewDark() {
+    CalendarTheme(darkTheme = true) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            CalendarGrid(uiState = CalendarUiState(cells = createSampleCells()))
+        }
+    }
+}
+
+@Preview(
+    name = "Light Mode",
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_NO
+)
+@Composable
+fun CalendarGridPreviewLight() {
+    CalendarTheme(darkTheme = false) {
+        Surface(color = MaterialTheme.colorScheme.background) {
+            CalendarGrid(uiState = CalendarUiState(cells = createSampleCells()))
+        }
+    }
 }

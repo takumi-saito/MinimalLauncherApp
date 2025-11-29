@@ -9,46 +9,38 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.kireaji.minimallauncherapp.DateAdapter
-import com.kireaji.minimallauncherapp.DateInfoUtil
-import com.kireaji.minimallauncherapp.R
+import androidx.compose.ui.platform.ComposeView
+import androidx.fragment.app.viewModels
+import com.kireaji.minimallauncherapp.ui.compose.CalendarScreen
+import com.kireaji.minimallauncherapp.ui.viewmodel.CalendarViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class CalenderFragment : Fragment() {
 
-    private lateinit var adapter: DateAdapter
+    private val viewModel: CalendarViewModel by viewModels()
+
     private val dateTimeChangedReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            val dateInfoList = DateInfoUtil().createDateInfoList()
-            adapter.submitList(dateInfoList)
+            viewModel.refreshCalendar()
         }
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        val root = inflater.inflate(R.layout.fragment_calender, container, false)
-        val recyclerView = root.findViewById<RecyclerView>(R.id.recycler_view)
-        adapter = DateAdapter()
-        recyclerView.adapter = adapter
-
-        val dateInfoList = DateInfoUtil().createDateInfoList()
-
-        adapter.submitList(dateInfoList)
-        val layoutManager = GridLayoutManager(requireContext(), 7)
-        recyclerView.layoutManager = layoutManager
-
+    ): View {
         activity?.registerReceiver(dateTimeChangedReceiver, IntentFilter().also {
             it.addAction(Intent.ACTION_TIME_TICK)
             it.addAction(Intent.ACTION_TIMEZONE_CHANGED)
             it.addAction(Intent.ACTION_TIME_CHANGED)
         })
-        return root
+
+        return ComposeView(requireContext()).apply {
+            setContent {
+                CalendarScreen(viewModel)
+            }
+        }
     }
 
     override fun onDestroyView() {

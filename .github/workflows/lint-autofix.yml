@@ -1,0 +1,177 @@
+name: Android Lint Auto Fix (Claude Code)
+
+on:
+  schedule:
+    - cron: "0 17 * * *"   # JST 02:00 実行
+  workflow_dispatch:
+
+jobs:
+  lint-autofix:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Android Build Environment
+      uses: ./.github/actions/setup-android-build
+      with:
+        google-services-json-base64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+
+    - name: Run Android Lint
+      run: ./gradlew lintDebug
+
+    - name: Install xmllint
+      run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+
+    - name: Find new Lint Issue
+      id: parse
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { execSync } = require('child_process');
+
+          const report = 'app/build/reports/lint-results-debug.xml';
+          core.setOutput('issue_file', report);
+
+          // 全ての Issue ID を抽出 (ユニーク)
+          let allIssueIds = [];
+          try {
+            const rawIds = execSync(
+              `xmllint --xpath "//issue[@severity='Error' or @severity='Warning']/@id" ${report} 2>/dev/null`,
+              { encoding: 'utf-8' }
+            );
+            // id="XXX" 形式から XXX を抽出してユニーク化
+            const matches = rawIds.match(/id="([^"]+)"/g) || [];
+            allIssueIds = [...new Set(matches.map(m => m.replace(/id="|"/g, '')))];
+          } catch (e) {
+            console.log('No Lint issues in report');
+            core.setOutput('has_issue', 'false');
+            return;
+          }
+
+          console.log('All Lint Issue IDs:', allIssueIds);
+
+          if (allIssueIds.length === 0) {
+            console.log('No Lint issues found.');
+            core.setOutput('has_issue', 'false');
+            return;
+          }
+
+          // 既存の [Lint] Issue を検索
+          const existingIssues = await github.rest.issues.listForRepo({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            state: 'all',
+            labels: 'lint',
+            per_page: 100
+          });
+
+          const existingIds = existingIssues.data
+            .map(issue => {
+              const match = issue.title.match(/\[Lint\] (.+)/);
+              return match ? match[1] : null;
+            })
+            .filter(Boolean);
+
+          console.log('Existing Issue IDs:', existingIds);
+
+          // 新規の Issue ID を特定
+          const newIssueId = allIssueIds.find(id => !existingIds.includes(id));
+
+          if (!newIssueId) {
+            console.log('No new Lint issues found. All issues already have GitHub Issues.');
+            core.setOutput('has_issue', 'false');
+            return;
+          }
+
+          console.log('New Issue ID:', newIssueId);
+          core.setOutput('has_issue', 'true');
+          core.setOutput('issue_id', newIssueId);
+
+          // 該当 Issue の詳細を抽出
+          let issueXml = '';
+          try {
+            issueXml = execSync(
+              `xmllint --xpath "(//issue[@id='${newIssueId}'])[1]" ${report}`,
+              { encoding: 'utf-8' }
+            );
+          } catch (e) {
+            console.log('Failed to extract issue details');
+            core.setOutput('has_issue', 'false');
+            return;
+          }
+
+          const messageMatch = issueXml.match(/message="([^"]+)"/);
+          const fileMatch = issueXml.match(/file="([^"]+)"/);
+          const lineMatch = issueXml.match(/line="([^"]+)"/);
+
+          core.setOutput('message', messageMatch ? messageMatch[1] : '');
+          core.setOutput('file', fileMatch ? fileMatch[1] : '');
+          core.setOutput('line', lineMatch ? lineMatch[1] : '');
+          core.setOutput('issue_content', issueXml);
+
+    - name: Upload Lint Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: lint-report
+        path: ${{ steps.parse.outputs.issue_file }}
+
+    - name: Create GitHub Issue
+      id: create_issue
+      if: steps.parse.outputs.has_issue == 'true'
+      uses: actions/github-script@v7
+      env:
+        ISSUE_ID: ${{ steps.parse.outputs.issue_id }}
+        ISSUE_MESSAGE: ${{ steps.parse.outputs.message }}
+        ISSUE_FILE: ${{ steps.parse.outputs.file }}
+        ISSUE_LINE: ${{ steps.parse.outputs.line }}
+        ISSUE_CONTENT: ${{ steps.parse.outputs.issue_content }}
+      with:
+        script: |
+          const issueId = process.env.ISSUE_ID;
+          const message = process.env.ISSUE_MESSAGE;
+          const file = process.env.ISSUE_FILE;
+          const line = process.env.ISSUE_LINE;
+          const content = process.env.ISSUE_CONTENT;
+
+          const body = `## Android Lint Issue
+
+          **Issue ID:** \`${issueId}\`
+          **Message:** ${message}
+          **File:** \`${file}\`
+          **Line:** ${line}
+
+          ### 詳細 (XML)
+          \`\`\`xml
+          ${content}
+          \`\`\`
+
+          ---
+          *This issue was automatically created by Android Lint Auto Fix workflow.*
+          `;
+
+          const issue = await github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `[Lint] ${issueId}`,
+            body: body,
+            labels: ['lint', 'automated', 'needs-implementation']
+          });
+          core.setOutput('issue_number', issue.data.number);
+          console.log(`Created issue #${issue.data.number}`);
+
+    - name: Comment to trigger Claude Code
+      if: steps.parse.outputs.has_issue == 'true'
+      uses: actions/github-script@v7
+      with:
+        # PAT を使用して takumi-saito としてコメント
+        github-token: ${{ secrets.PAT_GITHUB_TOKEN }}
+        script: |
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: ${{ steps.create_issue.outputs.issue_number }},
+            body: '@claude_dev issueを参照し実装してください'
+          });
+          console.log(`Added comment to issue #${{ steps.create_issue.outputs.issue_number }}`);

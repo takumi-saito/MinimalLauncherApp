@@ -13,7 +13,6 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
 import com.kireaji.minimallauncherapp.ui.compose.AppListScreen
 import com.kireaji.minimallauncherapp.ui.viewmodel.AppListViewModel
-import com.kireaji.minimallauncherapp.R
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -31,14 +30,7 @@ class AppListFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        val root = inflater.inflate(R.layout.fragment_app_list, container, false)
-        root.findViewById<ComposeView>(R.id.compose_view).apply {
-            setContent {
-                AppListScreen(viewModel)
-            }
-        }
+    ): View {
         viewModel.notifyGetAppInfoList()
 
         activity?.registerReceiver(packageReceiver, IntentFilter().also {
@@ -48,7 +40,12 @@ class AppListFragment : Fragment() {
             it.addAction(Intent.ACTION_PACKAGE_REPLACED)
             it.addDataScheme("package")
         })
-        return root
+
+        return ComposeView(requireContext()).apply {
+            setContent {
+                AppListScreen(viewModel)
+            }
+        }
     }
 
     override fun onDestroyView() {

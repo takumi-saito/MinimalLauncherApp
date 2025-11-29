@@ -28,7 +28,7 @@ class CalendarViewModel @Inject constructor() : ViewModel() {
     )
 
     companion object {
-        private const val ADDITIONAL_WEEK_COUNT = 5
+        private const val ADDITIONAL_WEEK_COUNT = 6
     }
 
     init {

@@ -42,7 +42,8 @@ class CalendarViewModel @Inject constructor() : ViewModel() {
 
     private fun buildCalendarCells(): List<CalendarCell> {
         val cells = mutableListOf<CalendarCell>()
-        var currentDate = LocalDate.of(LocalDate.now().year, LocalDate.now().month, 1)
+        val today = LocalDate.now()
+        var currentDate = LocalDate.of(today.year, today.month, 1)
         var isFirstDay = currentDate.dayOfMonth == 1
 
         for (week in 1..ADDITIONAL_WEEK_COUNT) {
@@ -54,7 +55,8 @@ class CalendarViewModel @Inject constructor() : ViewModel() {
 
             for (dayOfWeek in dayOfWeekOrder) {
                 if (!isFirstDay && dayOfWeek == currentDate.dayOfWeek) {
-                    cells.add(CalendarCell.DateCell(currentDate.dayOfMonth, dayOfWeek))
+                    val isToday = currentDate == today
+                    cells.add(CalendarCell.DateCell(currentDate.dayOfMonth, dayOfWeek, isToday))
                     currentDate = currentDate.plusDays(1)
                     if (currentDate.dayOfMonth == 1) {
                         isFirstDay = true

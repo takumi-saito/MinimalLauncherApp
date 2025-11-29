@@ -1,10 +1,13 @@
 package com.kireaji.minimallauncherapp.ui.compose
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -28,6 +31,7 @@ import java.time.DayOfWeek
 private object CalendarColors {
     val Saturday = Color(0xFF558FA7)  // MINIMAL_BLUE
     val Sunday = Color(0xFFF28C8F)    // MINIMAL_RED
+    val TodayBackground = Color.White.copy(alpha = 0.15f)
 }
 
 @Composable
@@ -87,12 +91,28 @@ fun CalendarCellItem(cell: CalendarCell) {
                 )
             }
             is CalendarCell.DateCell -> {
-                Text(
-                    text = cell.day.toString(),
-                    color = getDayOfWeekColor(cell.dayOfWeek),
-                    fontFamily = FontFamily.SansSerif,
-                    fontWeight = FontWeight.Light
-                )
+                Box(
+                    modifier = Modifier
+                        .size(28.dp)
+                        .then(
+                            if (cell.isToday) {
+                                Modifier.background(
+                                    color = CalendarColors.TodayBackground,
+                                    shape = CircleShape
+                                )
+                            } else {
+                                Modifier
+                            }
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = cell.day.toString(),
+                        color = getDayOfWeekColor(cell.dayOfWeek),
+                        fontFamily = FontFamily.SansSerif,
+                        fontWeight = FontWeight.Light
+                    )
+                }
             }
             CalendarCell.Empty -> {
                 // 空のセル - 何も表示しない
@@ -114,6 +134,7 @@ private fun getDayOfWeekColor(dayOfWeek: DayOfWeek): Color {
 @Composable
 fun CalendarGridPreview() {
     val sampleCells = listOf(
+        // Month header row
         CalendarCell.MonthHeader("DEC"),
         CalendarCell.Empty,
         CalendarCell.Empty,
@@ -121,6 +142,7 @@ fun CalendarGridPreview() {
         CalendarCell.Empty,
         CalendarCell.Empty,
         CalendarCell.Empty,
+        // Day of week header row
         CalendarCell.DayOfWeekHeader(DayOfWeek.SUNDAY),
         CalendarCell.DayOfWeekHeader(DayOfWeek.MONDAY),
         CalendarCell.DayOfWeekHeader(DayOfWeek.TUESDAY),
@@ -128,13 +150,46 @@ fun CalendarGridPreview() {
         CalendarCell.DayOfWeekHeader(DayOfWeek.THURSDAY),
         CalendarCell.DayOfWeekHeader(DayOfWeek.FRIDAY),
         CalendarCell.DayOfWeekHeader(DayOfWeek.SATURDAY),
+        // Week 1: 1(Sun) - 7(Sat)
         CalendarCell.DateCell(1, DayOfWeek.SUNDAY),
         CalendarCell.DateCell(2, DayOfWeek.MONDAY),
         CalendarCell.DateCell(3, DayOfWeek.TUESDAY),
         CalendarCell.DateCell(4, DayOfWeek.WEDNESDAY),
         CalendarCell.DateCell(5, DayOfWeek.THURSDAY),
         CalendarCell.DateCell(6, DayOfWeek.FRIDAY),
-        CalendarCell.DateCell(7, DayOfWeek.SATURDAY)
+        CalendarCell.DateCell(7, DayOfWeek.SATURDAY),
+        // Week 2: 8(Sun) - 14(Sat)
+        CalendarCell.DateCell(8, DayOfWeek.SUNDAY),
+        CalendarCell.DateCell(9, DayOfWeek.MONDAY),
+        CalendarCell.DateCell(10, DayOfWeek.TUESDAY),
+        CalendarCell.DateCell(11, DayOfWeek.WEDNESDAY),
+        CalendarCell.DateCell(12, DayOfWeek.THURSDAY),
+        CalendarCell.DateCell(13, DayOfWeek.FRIDAY),
+        CalendarCell.DateCell(14, DayOfWeek.SATURDAY),
+        // Week 3: 15(Sun) - 21(Sat)
+        CalendarCell.DateCell(15, DayOfWeek.SUNDAY, isToday = true),
+        CalendarCell.DateCell(16, DayOfWeek.MONDAY),
+        CalendarCell.DateCell(17, DayOfWeek.TUESDAY),
+        CalendarCell.DateCell(18, DayOfWeek.WEDNESDAY),
+        CalendarCell.DateCell(19, DayOfWeek.THURSDAY),
+        CalendarCell.DateCell(20, DayOfWeek.FRIDAY),
+        CalendarCell.DateCell(21, DayOfWeek.SATURDAY),
+        // Week 4: 22(Sun) - 28(Sat)
+        CalendarCell.DateCell(22, DayOfWeek.SUNDAY),
+        CalendarCell.DateCell(23, DayOfWeek.MONDAY),
+        CalendarCell.DateCell(24, DayOfWeek.TUESDAY),
+        CalendarCell.DateCell(25, DayOfWeek.WEDNESDAY),
+        CalendarCell.DateCell(26, DayOfWeek.THURSDAY),
+        CalendarCell.DateCell(27, DayOfWeek.FRIDAY),
+        CalendarCell.DateCell(28, DayOfWeek.SATURDAY),
+        // Week 5: 29(Sun) - 31(Tue)
+        CalendarCell.DateCell(29, DayOfWeek.SUNDAY),
+        CalendarCell.DateCell(30, DayOfWeek.MONDAY),
+        CalendarCell.DateCell(31, DayOfWeek.TUESDAY),
+        CalendarCell.Empty,
+        CalendarCell.Empty,
+        CalendarCell.Empty,
+        CalendarCell.Empty
     )
     CalendarGrid(uiState = CalendarUiState(cells = sampleCells))
 }

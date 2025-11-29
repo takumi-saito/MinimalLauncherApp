@@ -3,8 +3,8 @@ package com.kireaji.minimallauncherapp.ui.compose
 import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -150,7 +150,7 @@ private fun IndexPopup(
 @Composable
 private fun IndexBar(
     indexCharacters: List<Char>,
-    onCharacterSelected: (Char) -> Unit,
+    onCharacterSelected: (Char, Boolean) -> Unit,  // 第2引数: isDragging
     onTouchStart: () -> Unit,
     onTouchEnd: () -> Unit,
     modifier: Modifier = Modifier
@@ -164,24 +164,7 @@ private fun IndexBar(
             .padding(vertical = 20.dp)
             .onSizeChanged { barHeight = it.height }
             .pointerInput(indexCharacters) {
-                detectTapGestures(
-                    onPress = { offset ->
-                        onTouchStart()
-                        val index = calculateIndexFromOffset(
-                            offset.y,
-                            barHeight.toFloat(),
-                            indexCharacters.size
-                        )
-                        if (index in indexCharacters.indices) {
-                            onCharacterSelected(indexCharacters[index])
-                        }
-                        tryAwaitRelease()
-                        onTouchEnd()
-                    }
-                )
-            }
-            .pointerInput(indexCharacters) {
-                detectVerticalDragGestures(
+                detectDragGestures(
                     onDragStart = { offset ->
                         onTouchStart()
                         val index = calculateIndexFromOffset(
@@ -190,12 +173,12 @@ private fun IndexBar(
                             indexCharacters.size
                         )
                         if (index in indexCharacters.indices) {
-                            onCharacterSelected(indexCharacters[index])
+                            onCharacterSelected(indexCharacters[index], true)
                         }
                     },
                     onDragEnd = { onTouchEnd() },
                     onDragCancel = { onTouchEnd() },
-                    onVerticalDrag = { change, _ ->
+                    onDrag = { change, _ ->
                         change.consume()
                         val index = calculateIndexFromOffset(
                             change.position.y,
@@ -203,10 +186,24 @@ private fun IndexBar(
                             indexCharacters.size
                         )
                         if (index in indexCharacters.indices) {
-                            onCharacterSelected(indexCharacters[index])
+                            onCharacterSelected(indexCharacters[index], true)
                         }
                     }
                 )
+            }
+            .pointerInput(indexCharacters) {
+                detectTapGestures { offset ->
+                    onTouchStart()
+                    val index = calculateIndexFromOffset(
+                        offset.y,
+                        barHeight.toFloat(),
+                        indexCharacters.size
+                    )
+                    if (index in indexCharacters.indices) {
+                        onCharacterSelected(indexCharacters[index], false)
+                    }
+                    onTouchEnd()
+                }
             },
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -252,11 +249,15 @@ private fun AppListWithIndexBar(
         if (indexCharacters.isNotEmpty()) {
             IndexBar(
                 indexCharacters = indexCharacters,
-                onCharacterSelected = { char ->
+                onCharacterSelected = { char, isDragging ->
                     selectedCharacter = char
                     charToPositionMap[char]?.let { position ->
                         coroutineScope.launch {
-                            listState.animateScrollToItem(position)
+                            if (isDragging) {
+                                listState.scrollToItem(position)  // 即時スクロール
+                            } else {
+                                listState.animateScrollToItem(position)  // アニメーション
+                            }
                         }
                     }
                 },

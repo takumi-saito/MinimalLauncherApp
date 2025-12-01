@@ -26,34 +26,23 @@ jobs:
         id: extract
         run: |
           TITLE="${{ github.event.pull_request.title }}"
-          BEFORE_TITLE="${{ github.event.changes.title.from }}"
+          BEFORE_TITLE="${{ github.event.changes.title.from || '' }}"
+
+          echo "📋 PR タイトル: $TITLE"
+          echo "📋 以前のタイトル: $BEFORE_TITLE"
 
           # 現在のタイトルから全 ID を抽出（複数対応）
+          # grep -oE で全マッチを抽出し、sed でブラケットを除去
           NOTION_IDS=""
-          TEMP_TITLE="$TITLE"
-          while [[ $TEMP_TITLE =~ \[([A-Z]+-[0-9]+)\] ]]; do
-            ID="${BASH_REMATCH[1]}"
-            if [ -z "$NOTION_IDS" ]; then
-              NOTION_IDS="$ID"
-            else
-              NOTION_IDS="$NOTION_IDS,$ID"
-            fi
-            TEMP_TITLE="${TEMP_TITLE/${BASH_REMATCH[0]}/}"
-          done
+          if echo "$TITLE" | grep -qE '\[[A-Z]+-[0-9]+\]'; then
+            # 全ての [ID] パターンを抽出して、カンマ区切りに変換
+            NOTION_IDS=$(echo "$TITLE" | grep -oE '\[[A-Z]+-[0-9]+\]' | sed 's/\[//g' | sed 's/\]//g' | paste -sd ',' -)
+          fi
 
           # 以前のタイトルから ID 抽出（edited イベント用）
           BEFORE_IDS=""
-          if [ -n "$BEFORE_TITLE" ]; then
-            TEMP_BEFORE="$BEFORE_TITLE"
-            while [[ $TEMP_BEFORE =~ \[([A-Z]+-[0-9]+)\] ]]; do
-              ID="${BASH_REMATCH[1]}"
-              if [ -z "$BEFORE_IDS" ]; then
-                BEFORE_IDS="$ID"
-              else
-                BEFORE_IDS="$BEFORE_IDS,$ID"
-              fi
-              TEMP_BEFORE="${TEMP_BEFORE/${BASH_REMATCH[0]]/}"
-            done
+          if [ -n "$BEFORE_TITLE" ] && echo "$BEFORE_TITLE" | grep -qE '\[[A-Z]+-[0-9]+\]'; then
+            BEFORE_IDS=$(echo "$BEFORE_TITLE" | grep -oE '\[[A-Z]+-[0-9]+\]' | sed 's/\[//g' | sed 's/\]//g' | paste -sd ',' -)
           fi
 
           echo "notion_ids=$NOTION_IDS" >> $GITHUB_OUTPUT

@@ -54,7 +54,9 @@ jobs:
           else
             echo "has_notion_id=true" >> $GITHUB_OUTPUT
             echo "✅ 抽出された Notion ID: $NOTION_IDS"
-            [ -n "$BEFORE_IDS" ] && echo "📝 以前の Notion ID: $BEFORE_IDS"
+            if [ -n "$BEFORE_IDS" ]; then
+              echo "📝 以前の Notion ID: $BEFORE_IDS"
+            fi
           fi
 
       # 3. イベント別のステータス値を決定

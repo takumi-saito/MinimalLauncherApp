@@ -1,0 +1,182 @@
+name: Notion PR Connector
+
+on:
+  pull_request:
+    types: [opened, reopened, edited, review_requested, closed]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+concurrency:
+  group: notion-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  connect-notion-task:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. リポジトリチェックアウト
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. PR タイトルから Notion ID を抽出
+      - name: Extract Notion IDs from PR title
+        id: extract
+        run: |
+          TITLE="${{ github.event.pull_request.title }}"
+          BEFORE_TITLE="${{ github.event.changes.title.from }}"
+
+          # 現在のタイトルから全 ID を抽出（複数対応）
+          NOTION_IDS=""
+          TEMP_TITLE="$TITLE"
+          while [[ $TEMP_TITLE =~ \[([A-Z]+-[0-9]+)\] ]]; do
+            ID="${BASH_REMATCH[1]}"
+            if [ -z "$NOTION_IDS" ]; then
+              NOTION_IDS="$ID"
+            else
+              NOTION_IDS="$NOTION_IDS,$ID"
+            fi
+            TEMP_TITLE="${TEMP_TITLE/${BASH_REMATCH[0]}/}"
+          done
+
+          # 以前のタイトルから ID 抽出（edited イベント用）
+          BEFORE_IDS=""
+          if [ -n "$BEFORE_TITLE" ]; then
+            TEMP_BEFORE="$BEFORE_TITLE"
+            while [[ $TEMP_BEFORE =~ \[([A-Z]+-[0-9]+)\] ]]; do
+              ID="${BASH_REMATCH[1]}"
+              if [ -z "$BEFORE_IDS" ]; then
+                BEFORE_IDS="$ID"
+              else
+                BEFORE_IDS="$BEFORE_IDS,$ID"
+              fi
+              TEMP_BEFORE="${TEMP_BEFORE/${BASH_REMATCH[0]]/}"
+            done
+          fi
+
+          echo "notion_ids=$NOTION_IDS" >> $GITHUB_OUTPUT
+          echo "before_notion_ids=$BEFORE_IDS" >> $GITHUB_OUTPUT
+
+          if [ -z "$NOTION_IDS" ]; then
+            echo "has_notion_id=false" >> $GITHUB_OUTPUT
+            echo "⚠️ PR タイトルに Notion ID が見つかりませんでした"
+          else
+            echo "has_notion_id=true" >> $GITHUB_OUTPUT
+            echo "✅ 抽出された Notion ID: $NOTION_IDS"
+            [ -n "$BEFORE_IDS" ] && echo "📝 以前の Notion ID: $BEFORE_IDS"
+          fi
+
+      # 3. イベント別のステータス値を決定
+      - name: Determine Notion Status
+        id: status
+        if: steps.extract.outputs.has_notion_id == 'true'
+        run: |
+          EVENT="${{ github.event.action }}"
+          MERGED="${{ github.event.pull_request.merged }}"
+
+          case "$EVENT" in
+            opened)
+              # GitHub PR(text) のみ更新、ステータス変更なし
+              echo "update_status=false" >> $GITHUB_OUTPUT
+              echo "📝 opened: GitHub PR リンクのみ更新"
+              ;;
+            reopened)
+              echo "status_value=進行中" >> $GITHUB_OUTPUT
+              echo "update_status=true" >> $GITHUB_OUTPUT
+              echo "🔄 reopened: ステータスを「進行中」に更新"
+              ;;
+            review_requested)
+              echo "status_value=レビュー中" >> $GITHUB_OUTPUT
+              echo "update_status=true" >> $GITHUB_OUTPUT
+              echo "👀 review_requested: ステータスを「レビュー中」に更新"
+              ;;
+            closed)
+              if [ "$MERGED" = "true" ]; then
+                echo "status_value=完了" >> $GITHUB_OUTPUT
+                echo "✅ closed (merged): ステータスを「完了」に更新"
+              else
+                echo "status_value=未完了" >> $GITHUB_OUTPUT
+                echo "❌ closed (not merged): ステータスを「未完了」に戻す"
+              fi
+              echo "update_status=true" >> $GITHUB_OUTPUT
+              ;;
+            edited)
+              # タイトル変更の場合はステータス更新なし
+              echo "update_status=false" >> $GITHUB_OUTPUT
+              echo "✏️ edited: リンク更新のみ（ステータス変更なし）"
+              ;;
+          esac
+
+      # 4. Notion タスクを更新
+      - name: Update Notion Task
+        id: update_notion
+        if: steps.extract.outputs.has_notion_id == 'true'
+        continue-on-error: true
+        timeout-minutes: 3
+        uses: TakanoriOnuma/notion-task-connector-with-github-pr@v0.0.4
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+        with:
+          notionIdProperty: ${{ steps.extract.outputs.notion_ids }}
+          beforeNotionIdProperty: ${{ steps.extract.outputs.before_notion_ids }}
+          statusPropertyName: ${{ steps.status.outputs.update_status == 'true' && 'ステータス' || '' }}
+          statusPropertyValue: ${{ steps.status.outputs.status_value }}
+          githubPrPropertyName: 'GitHub PR'
+
+      # 5. 連携結果を PR にコメント投稿（成功時）
+      - name: Post Success Comment to PR
+        if: |
+          steps.extract.outputs.has_notion_id == 'true' &&
+          steps.update_notion.outcome == 'success'
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            ## ✅ Notion タスク連携完了
+
+            以下の Notion タスクが PR に連携されました:
+
+            **抽出された Notion ID:** `${{ steps.extract.outputs.notion_ids }}`
+            **PR URL:** ${{ github.event.pull_request.html_url }}
+
+            ${{ steps.status.outputs.update_status == 'true' && format('**更新されたステータス:** {0}', steps.status.outputs.status_value) || '**更新内容:** GitHub PR リンクのみ' }}
+
+            [Notion データベースを確認](https://www.notion.so/${{ secrets.NOTION_DATABASE_ID }})
+
+            ---
+            🤖 Automated by [Notion PR Connector](https://github.com/TakanoriOnuma/notion-task-connector-with-github-pr)
+            <!-- NOTION_PR_CONNECTOR -->
+          comment_tag: NOTION_PR_CONNECTOR
+
+      # 6. エラー時のコメント投稿
+      - name: Post Error Comment on Failure
+        if: |
+          steps.extract.outputs.has_notion_id == 'true' &&
+          steps.update_notion.outcome == 'failure'
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            ## ⚠️ Notion タスク連携エラー
+
+            Notion API との連携中にエラーが発生しました。
+
+            **PR タイトル:** `${{ github.event.pull_request.title }}`
+            **抽出された Notion ID:** `${{ steps.extract.outputs.notion_ids }}`
+
+            **考えられる原因:**
+            - Notion ID がデータベースに存在しない
+            - Notion トークンの有効期限切れ
+            - Notion API の一時的な障害
+            - プロパティ名の不一致（"ステータス"、"GitHub PR"）
+
+            **対処方法:**
+            1. PR タイトルの Notion ID が正しいか確認してください
+            2. [Notion データベース](https://www.notion.so/${{ secrets.NOTION_DATABASE_ID }})で ID を確認してください
+            3. それでも解決しない場合は、リポジトリ管理者に連絡してください
+
+            ---
+            🤖 Automated by Notion PR Connector
+            <!-- NOTION_PR_CONNECTOR_ERROR -->
+          comment_tag: NOTION_PR_CONNECTOR_ERROR

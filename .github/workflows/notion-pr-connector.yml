@@ -71,6 +71,13 @@ jobs:
         run: |
           EVENT="${{ github.event.action }}"
           MERGED="${{ github.event.pull_request.merged }}"
+          PR_STATE="${{ github.event.pull_request.state }}"
+
+          # クローズ済みPRで closed イベント以外の場合は警告
+          if [ "$PR_STATE" = "closed" ] && [ "$EVENT" != "closed" ]; then
+            echo "⚠️ クローズ済みPRのため、Notion更新をスキップします (イベント: $EVENT)"
+            exit 0
+          fi
 
           case "$EVENT" in
             opened)
@@ -108,7 +115,9 @@ jobs:
       # 4. Notion タスクを更新
       - name: Update Notion Task
         id: update_notion
-        if: steps.extract.outputs.has_notion_id == 'true'
+        if: |
+          steps.extract.outputs.has_notion_id == 'true' &&
+          (github.event.action == 'closed' || github.event.pull_request.state == 'open')
         continue-on-error: true
         timeout-minutes: 3
         uses: TakanoriOnuma/notion-task-connector-with-github-pr@v0.0.4

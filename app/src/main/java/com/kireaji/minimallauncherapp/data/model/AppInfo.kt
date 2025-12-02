@@ -3,6 +3,9 @@ package com.kireaji.minimallauncherapp.data.model
 import android.content.ComponentName
 import android.graphics.drawable.Drawable
 
+/**
+ * アプリ情報
+ */
 data class AppInfo(
     val packageName: String,
     val icon: Drawable?,

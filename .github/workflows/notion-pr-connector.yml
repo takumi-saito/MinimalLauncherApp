@@ -115,7 +115,7 @@ jobs:
           beforeNotionIdProperty: ${{ steps.extract.outputs.before_notion_ids }}
           statusPropertyName: ${{ steps.status.outputs.update_status == 'true' && 'ステータス' || '' }}
           statusPropertyValue: ${{ steps.status.outputs.status_value }}
-          githubPrPropertyName: 'GitHub PR'
+          githubPrPropertyName: 'GitHub PR(text)'
 
       # 5. 連携結果を PR にコメント投稿（成功時）
       - name: Post Success Comment to PR
@@ -160,7 +160,7 @@ jobs:
             - Notion ID がデータベースに存在しない
             - Notion トークンの有効期限切れ
             - Notion API の一時的な障害
-            - プロパティ名の不一致（"ステータス"、"GitHub PR"）
+            - プロパティ名の不一致（"ステータス"、"GitHub PR(text)"）
 
             **対処方法:**
             1. PR タイトルの Notion ID が正しいか確認してください

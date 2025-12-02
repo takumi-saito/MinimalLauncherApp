@@ -36,18 +36,18 @@ jobs:
           # ブラケット [] = ID記載領域の境界定義
           # カンマ ,      = 領域内でのID区切り
           NOTION_IDS=""
-          if echo "$TITLE" | grep -qE '\[([A-Z]+-[0-9]+)([,\s]+[A-Z]+-[0-9]+)*\]'; then
+          if echo "$TITLE" | grep -qE '\[([A-Z]+-[0-9]+)(,[[:space:]]*[A-Z]+-[0-9]+)*\]'; then
             # ブラケット内の文字列を抽出
-            INNER=$(echo "$TITLE" | grep -oE '\[([A-Z]+-[0-9]+)([,\s]+[A-Z]+-[0-9]+)*\]' | sed 's/\[//g' | sed 's/\]//g')
+            INNER=$(echo "$TITLE" | grep -oE '\[([A-Z]+-[0-9]+)(,[[:space:]]*[A-Z]+-[0-9]+)*\]' | sed 's/\[//g' | sed 's/\]//g')
             # カンマとスペースを正規化してカンマ区切りに変換
-            NOTION_IDS=$(echo "$INNER" | sed 's/,\s*/,/g' | sed 's/\s\+/,/g')
+            NOTION_IDS=$(echo "$INNER" | sed 's/,[[:space:]]*/,/g')
           fi
 
           # 以前のタイトルから ID 抽出（edited イベント用）
           BEFORE_IDS=""
-          if [ -n "$BEFORE_TITLE" ] && echo "$BEFORE_TITLE" | grep -qE '\[([A-Z]+-[0-9]+)([,\s]+[A-Z]+-[0-9]+)*\]'; then
-            INNER=$(echo "$BEFORE_TITLE" | grep -oE '\[([A-Z]+-[0-9]+)([,\s]+[A-Z]+-[0-9]+)*\]' | sed 's/\[//g' | sed 's/\]//g')
-            BEFORE_IDS=$(echo "$INNER" | sed 's/,\s*/,/g' | sed 's/\s\+/,/g')
+          if [ -n "$BEFORE_TITLE" ] && echo "$BEFORE_TITLE" | grep -qE '\[([A-Z]+-[0-9]+)(,[[:space:]]*[A-Z]+-[0-9]+)*\]'; then
+            INNER=$(echo "$BEFORE_TITLE" | grep -oE '\[([A-Z]+-[0-9]+)(,[[:space:]]*[A-Z]+-[0-9]+)*\]' | sed 's/\[//g' | sed 's/\]//g')
+            BEFORE_IDS=$(echo "$INNER" | sed 's/,[[:space:]]*/,/g')
           fi
 
           echo "notion_ids=$NOTION_IDS" >> $GITHUB_OUTPUT

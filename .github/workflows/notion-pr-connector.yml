@@ -81,29 +81,31 @@ jobs:
 
           case "$EVENT" in
             opened)
-              # GitHub PR(text) のみ更新、ステータス変更なし
-              echo "update_status=false" >> $GITHUB_OUTPUT
-              echo "📝 opened: GitHub PR リンクのみ更新"
-              ;;
-            reopened)
-              echo "status_value=進行中" >> $GITHUB_OUTPUT
-              echo "update_status=true" >> $GITHUB_OUTPUT
-              echo "🔄 reopened: ステータスを「進行中」に更新"
-              ;;
-            review_requested)
+              # PR作成時点でレビュー待ち状態に
               echo "status_value=レビュー中" >> $GITHUB_OUTPUT
               echo "update_status=true" >> $GITHUB_OUTPUT
-              echo "👀 review_requested: ステータスを「レビュー中」に更新"
+              echo "📝 opened: ステータスを「レビュー中」に更新"
+              ;;
+            reopened)
+              # PR再オープン時もレビュー待ち状態に
+              echo "status_value=レビュー中" >> $GITHUB_OUTPUT
+              echo "update_status=true" >> $GITHUB_OUTPUT
+              echo "🔄 reopened: ステータスを「レビュー中」に更新"
+              ;;
+            review_requested)
+              # 既にレビュー中なので何もしない
+              echo "update_status=false" >> $GITHUB_OUTPUT
+              echo "👀 review_requested: 既にレビュー中のため、ステータス変更なし"
               ;;
             closed)
               if [ "$MERGED" = "true" ]; then
                 echo "status_value=完了" >> $GITHUB_OUTPUT
+                echo "update_status=true" >> $GITHUB_OUTPUT
                 echo "✅ closed (merged): ステータスを「完了」に更新"
               else
-                echo "status_value=未完了" >> $GITHUB_OUTPUT
-                echo "❌ closed (not merged): ステータスを「未完了」に戻す"
+                echo "update_status=false" >> $GITHUB_OUTPUT
+                echo "❌ closed (not merged): ステータス変更なし（別PRで対応の可能性）"
               fi
-              echo "update_status=true" >> $GITHUB_OUTPUT
               ;;
             edited)
               # タイトル変更の場合はステータス更新なし

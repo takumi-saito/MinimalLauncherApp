@@ -78,10 +78,12 @@ kotlin {
 dependencies {
 
     implementation ("org.jetbrains.kotlin:kotlin-stdlib:1.9.24")
-    implementation ("androidx.core:core-ktx:1.8.0")
+    implementation ("androidx.core:core-ktx:1.13.1")
     implementation (platform("org.jetbrains.kotlin:kotlin-bom:1.9.24"))
-    implementation ("androidx.activity:activity-compose:1.5.1")
-    implementation (platform("androidx.compose:compose-bom:2022.10.00"))
+    implementation ("androidx.activity:activity-compose:1.9.0")
+    // Compose UI 1.6.8 / Material3 1.2.1。Kotlin 1.9.24 + compose compiler 1.5.14 で使える上限。
+    // これより古いと VRT (Roborazzi/Robolectric) の描画が動かない。
+    implementation (platform("androidx.compose:compose-bom:2024.06.00"))
     implementation ("androidx.compose.ui:ui")
     implementation ("androidx.compose.ui:ui-graphics")
     implementation ("androidx.compose.ui:ui-tooling-preview")
@@ -89,13 +91,13 @@ dependencies {
     debugImplementation ("androidx.compose.ui:ui-tooling")
     debugImplementation ("androidx.compose.ui:ui-test-manifest")
     implementation ("com.google.accompanist:accompanist-drawablepainter:0.28.0")
-    implementation("androidx.compose.runtime:runtime-livedata:1.0.5")
+    implementation("androidx.compose.runtime:runtime-livedata")
     implementation ("androidx.appcompat:appcompat:1.6.1")
     implementation ("androidx.fragment:fragment-ktx:1.5.7")
     implementation ("com.google.android.material:material:1.6.0")
     implementation ("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation ("androidx.lifecycle:lifecycle-extensions:2.2.0")
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1")
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.2")
     implementation ("androidx.legacy:legacy-support-v4:1.0.0")
     implementation ("androidx.viewpager2:viewpager2:1.0.0")
     // Hilt

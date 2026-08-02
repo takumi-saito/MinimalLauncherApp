@@ -76,16 +76,32 @@ fun AppListScreen(
     viewModel: AppListViewModel
 ) {
     val appInfoListState = viewModel.appInfoListStateFlow.collectAsState()
+    AppListScreen(
+        appInfoList = appInfoListState.value,
+        onAppClick = {
+            viewModel.launchApp(it)
+        }
+    )
+}
+
+/**
+ * 状態を引数で受け取る版。VRT（AppListScreenVrtTest）はこちらを撮影する。
+ * テスト側で AppTheme / Surface を再宣言すると画面の見た目の定義が二重化するため、
+ * スキャフォールドは必ずここに一箇所だけ置くこと。
+ */
+@Composable
+fun AppListScreen(
+    appInfoList: List<AppInfo>,
+    onAppClick: (AppInfo) -> Unit
+) {
     AppTheme {
         Surface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
             AppList(
-                appInfoList = appInfoListState.value,
-                onAppClick = {
-                    viewModel.launchApp(it)
-                }
+                appInfoList = appInfoList,
+                onAppClick = onAppClick
             )
         }
     }
@@ -281,44 +297,8 @@ private fun AppListWithIndexBar(
     }
 }
 
-// プレビュー用のサンプルデータ（A-Z各文字で始まるアプリ名）
-private fun createPreviewAppList(): List<AppInfo> {
-    val labels = listOf(
-        "Amazon", "Apple Music",
-        "Bank App", "Browser",
-        "Calculator", "Calendar", "Camera",
-        "Discord", "Drive",
-        "Email",
-        "Facebook", "Files",
-        "Gmail", "Google Maps",
-        "Home",
-        "Instagram",
-        "Jira",
-        "Kindle",
-        "LinkedIn", "Line",
-        "Maps", "Messages",
-        "Netflix", "Notes",
-        "Outlook",
-        "Photos", "Play Store",
-        "Reddit",
-        "Spotify", "Settings",
-        "Twitter", "TikTok",
-        "Uber",
-        "Venmo",
-        "WhatsApp", "Weather",
-        "YouTube",
-        "Zoom"
-    )
-    return labels.map { label ->
-        AppInfo(
-            packageName = "com.example.${label.lowercase().replace(" ", "")}",
-            icon = null,
-            label = label,
-            sourceDir = "",
-            componentName = null
-        )
-    }.sortedBy { it.label }
-}
+// プレビュー用のサンプルデータは PreviewData.kt（previewAppList）に集約している。
+// VRT と同じデータを使うことで、プレビューが通れば期待画像も同じ内容になる。
 
 @Preview(
     name = "Dark Mode",
@@ -330,7 +310,7 @@ fun AppListPreviewDark() {
     AppTheme(darkTheme = true) {
         Surface(color = MaterialTheme.colorScheme.background) {
             AppList(
-                appInfoList = createPreviewAppList(),
+                appInfoList = previewAppList(),
                 onAppClick = {}
             )
         }
@@ -347,7 +327,7 @@ fun AppListPreviewLight() {
     AppTheme(darkTheme = false) {
         Surface(color = MaterialTheme.colorScheme.background) {
             AppList(
-                appInfoList = createPreviewAppList(),
+                appInfoList = previewAppList(),
                 onAppClick = {}
             )
         }

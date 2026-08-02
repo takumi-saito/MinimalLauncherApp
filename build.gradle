@@ -13,4 +13,7 @@ plugins {
     id 'org.jetbrains.kotlin.android' version '1.9.24' apply false
     id 'com.google.devtools.ksp' version '1.9.24-1.0.20' apply false
     id 'com.google.dagger.hilt.android' version '2.51.1' apply false
+    // VRT。1.47.0 は Kotlin 1.9.24 と互換な最終版（1.48.0+ は kotlin-stdlib 2.0.21 で
+    // メタデータ非互換）。Kotlin 2.x に上げるまでここは動かせない。詳細は docs/vrt.md。
+    id 'io.github.takahirom.roborazzi' version '1.47.0' apply false
 }

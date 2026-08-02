@@ -4,8 +4,14 @@
 /keystore.properties
 /.idea
 .DS_Store
-/build
+# ルート限定の /build だと app/build/ が無視されない（VRT の中間画像が git に見えてしまう）
+build/
 /captures
 .externalNativeBuild
 .cxx
 local.properties
+
+# VRT: 期待画像 vrt/expect/ のみコミットし、実行時の生成物は追跡しない
+/vrt/actual/
+/vrt/diff/
+/vrt/.compare/

@@ -1,0 +1,5 @@
+* text=auto
+
+# VRT の期待画像。改行正規化で PNG が壊れるのを防ぎ、テキスト差分もマージも試みさせない。
+# （binary は -diff -merge -text の展開）
+*.png binary

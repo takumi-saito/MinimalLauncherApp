@@ -52,6 +52,15 @@ private fun todayBackgroundColor(): Color {
 @Composable
 fun CalendarScreen(viewModel: CalendarViewModel) {
     val uiState = viewModel.uiState.collectAsState()
+    CalendarScreen(uiState = uiState.value)
+}
+
+/**
+ * 状態を引数で受け取る版。VRT（CalendarScreenVrtTest）はこちらを撮影する。
+ * 縦センタリングの Box はこの画面固有の見た目なので、CalendarGrid ではなくここを撮ること。
+ */
+@Composable
+fun CalendarScreen(uiState: CalendarUiState) {
     AppTheme {
         Surface(
             modifier = Modifier.fillMaxSize(),
@@ -61,7 +70,7 @@ fun CalendarScreen(viewModel: CalendarViewModel) {
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                CalendarGrid(uiState = uiState.value)
+                CalendarGrid(uiState = uiState)
             }
         }
     }
@@ -155,64 +164,8 @@ private fun getDayOfWeekColor(dayOfWeek: DayOfWeek): Color {
     }
 }
 
-private fun createSampleCells() = listOf(
-    // Month header row
-    CalendarCell.MonthHeader("DEC"),
-    CalendarCell.Empty,
-    CalendarCell.Empty,
-    CalendarCell.Empty,
-    CalendarCell.Empty,
-    CalendarCell.Empty,
-    CalendarCell.Empty,
-    // Day of week header row
-    CalendarCell.DayOfWeekHeader(DayOfWeek.SUNDAY),
-    CalendarCell.DayOfWeekHeader(DayOfWeek.MONDAY),
-    CalendarCell.DayOfWeekHeader(DayOfWeek.TUESDAY),
-    CalendarCell.DayOfWeekHeader(DayOfWeek.WEDNESDAY),
-    CalendarCell.DayOfWeekHeader(DayOfWeek.THURSDAY),
-    CalendarCell.DayOfWeekHeader(DayOfWeek.FRIDAY),
-    CalendarCell.DayOfWeekHeader(DayOfWeek.SATURDAY),
-    // Week 1: 1(Sun) - 7(Sat)
-    CalendarCell.DateCell(1, DayOfWeek.SUNDAY),
-    CalendarCell.DateCell(2, DayOfWeek.MONDAY),
-    CalendarCell.DateCell(3, DayOfWeek.TUESDAY),
-    CalendarCell.DateCell(4, DayOfWeek.WEDNESDAY),
-    CalendarCell.DateCell(5, DayOfWeek.THURSDAY),
-    CalendarCell.DateCell(6, DayOfWeek.FRIDAY),
-    CalendarCell.DateCell(7, DayOfWeek.SATURDAY),
-    // Week 2: 8(Sun) - 14(Sat)
-    CalendarCell.DateCell(8, DayOfWeek.SUNDAY),
-    CalendarCell.DateCell(9, DayOfWeek.MONDAY),
-    CalendarCell.DateCell(10, DayOfWeek.TUESDAY),
-    CalendarCell.DateCell(11, DayOfWeek.WEDNESDAY),
-    CalendarCell.DateCell(12, DayOfWeek.THURSDAY),
-    CalendarCell.DateCell(13, DayOfWeek.FRIDAY),
-    CalendarCell.DateCell(14, DayOfWeek.SATURDAY),
-    // Week 3: 15(Sun) - 21(Sat)
-    CalendarCell.DateCell(15, DayOfWeek.SUNDAY, isToday = true),
-    CalendarCell.DateCell(16, DayOfWeek.MONDAY),
-    CalendarCell.DateCell(17, DayOfWeek.TUESDAY),
-    CalendarCell.DateCell(18, DayOfWeek.WEDNESDAY),
-    CalendarCell.DateCell(19, DayOfWeek.THURSDAY),
-    CalendarCell.DateCell(20, DayOfWeek.FRIDAY),
-    CalendarCell.DateCell(21, DayOfWeek.SATURDAY),
-    // Week 4: 22(Sun) - 28(Sat)
-    CalendarCell.DateCell(22, DayOfWeek.SUNDAY),
-    CalendarCell.DateCell(23, DayOfWeek.MONDAY),
-    CalendarCell.DateCell(24, DayOfWeek.TUESDAY),
-    CalendarCell.DateCell(25, DayOfWeek.WEDNESDAY),
-    CalendarCell.DateCell(26, DayOfWeek.THURSDAY),
-    CalendarCell.DateCell(27, DayOfWeek.FRIDAY),
-    CalendarCell.DateCell(28, DayOfWeek.SATURDAY),
-    // Week 5: 29(Sun) - 31(Tue)
-    CalendarCell.DateCell(29, DayOfWeek.SUNDAY),
-    CalendarCell.DateCell(30, DayOfWeek.MONDAY),
-    CalendarCell.DateCell(31, DayOfWeek.TUESDAY),
-    CalendarCell.Empty,
-    CalendarCell.Empty,
-    CalendarCell.Empty,
-    CalendarCell.Empty
-)
+// プレビュー用のサンプルデータは PreviewData.kt（previewCalendarUiState）に集約している。
+// VRT と同じデータを使うことで、プレビューが通れば期待画像も同じ内容になる。
 
 @Preview(
     name = "Dark Mode",
@@ -223,7 +176,7 @@ private fun createSampleCells() = listOf(
 fun CalendarGridPreviewDark() {
     AppTheme(darkTheme = true) {
         Surface(color = MaterialTheme.colorScheme.background) {
-            CalendarGrid(uiState = CalendarUiState(cells = createSampleCells()))
+            CalendarGrid(uiState = previewCalendarUiState())
         }
     }
 }
@@ -237,7 +190,7 @@ fun CalendarGridPreviewDark() {
 fun CalendarGridPreviewLight() {
     AppTheme(darkTheme = false) {
         Surface(color = MaterialTheme.colorScheme.background) {
-            CalendarGrid(uiState = CalendarUiState(cells = createSampleCells()))
+            CalendarGrid(uiState = previewCalendarUiState())
         }
     }
 }

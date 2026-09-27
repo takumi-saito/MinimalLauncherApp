@@ -92,25 +92,37 @@ app/src/main/java/com/kireaji/minimallauncherapp/
 
 ### 主要コンポーネント
 
-- **FullscreenActivity**: メインアクティビティ。ViewPager2 でカレンダーとアプリリストを切り替え
+- **FullscreenActivity**: メインアクティビティ。ViewPager でカレンダーとアプリリストを切り替え
 - **AppListFragment/AppListScreen**: インストール済みアプリ一覧表示（Compose）。インデックスバーによる高速ナビゲーション対応
-- **CalendarFragment/CalendarScreen**: カレンダー表示（Compose）
+- **CalenderFragment/CalendarScreen**: カレンダー表示（Compose）。Fragment のクラス名は `Calender`（綴り違い）なので検索時に注意
 - **AppUseCase**: アプリケーション情報の取得・管理ロジック
 - **Hilt DI**: `@HiltAndroidApp`、`@AndroidEntryPoint`、`@Module` によるモジュール構成
 
 ### 技術スタック
 
-- **UI**: Jetpack Compose + 従来の View システム（ViewPager2）
-- **DI**: Hilt 2.44
-- **ビルドツール**: Gradle 8.10.1、Kotlin 1.8.20
-- **最小 SDK**: 26 / ターゲット SDK: 36
-- **Java バージョン**: 17
-- **テスト**: JUnit 4.13.2、Mockito 3.12.4
+- **UI**: Jetpack Compose（compose-bom 2024.06.00 / Compose UI 1.6.8 / Material3 1.2.1）+ 従来の View システム（ViewPager）
+- **DI**: Hilt 2.51.1（KSP）
+- **ビルドツール**: Gradle 8.14.3、AGP 8.10.1、Kotlin 1.9.24、KSP 1.9.24-1.0.20、compose compiler 1.5.14
+- **最小 SDK**: 26 / ターゲット SDK: 36 / コンパイル SDK: 36
+- **Java バージョン**: 17（`jvmToolchain(17)`）
+- **テスト**: JUnit 4.13.2、Mockito 3.12.4、Robolectric 4.16.1、Roborazzi 1.47.0（VRT）
 - **Firebase**: Analytics、Crashlytics、Performance Monitoring
+
+Kotlin は 1.9 系のため、Compose は 2024.06.00、Roborazzi は 1.47.0 が上限（理由は [ADR-0002](docs/adr/0002-roborazzi-for-vrt.md)）。これらを上げるには Kotlin 2.x への移行が先に必要。
 
 ### CI/CD
 
-GitHub Actions による自動ビルド・テスト（`.github/workflows/android_ci.yml`）：
-- develop ブランチへの push/PR で起動
-- Java 17 環境でビルド・テスト実行
-- JaCoCo によるカバレッジレポート生成（最小カバレッジ: 全体 40%、変更ファイル 60%）
+GitHub Actions（`.github/workflows/`）。**PR でビルドやテストを実行するワークフローは無い**。テストと VRT はローカルで実行する。
+
+| ワークフロー | トリガー | 内容 |
+|---|---|---|
+| `android-debug-build.yml` | develop への push | `assembleDebug` |
+| `android-release-build.yml` | develop への push | `bundleRelease`、AAB をアーティファクト化 |
+| `deploy-google-play-console.yml` | release への push | `bundleRelease` → Google Play の internal トラックへデプロイ |
+| `lint-autofix.yml` | 毎日 / 手動 | `lintDebug` の結果から Issue を起票 |
+| `claude-review.yml` / `claude-security-review.yml` | PR | Claude によるレビュー |
+| `claude.yml` / `claude-dev.yml` | Issue・コメント | Claude による対応 |
+| `notion-pr-connector.yml` | PR | Notion タスクのステータス連携 |
+| `metrics.yml` | PR / 毎週 / 手動 | メトリクス計測 |
+
+共通のセットアップ（JDK 17、`google-services.json` の復元）は `.github/actions/setup-android-build` にある。
